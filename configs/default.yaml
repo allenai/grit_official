@@ -1,0 +1,37 @@
+job_name: default_job
+job_dir: ${prjpaths.output_dir}/${job_name}
+
+defaults:
+  - prjpaths: tanmay_ws
+
+urls:
+  samples: https://ai2-prior-grit.s3.us-west-2.amazonaws.com/public/grit_data.zip
+  images:
+    #sn: https://ai2-prior-grit.s3.us-west-2.amazonaws.com/public/sn_images.tar.gz
+    blended_mvs: https://ai2-prior-grit.s3.us-west-2.amazonaws.com/public/blended_mvs_images.tar.gz
+    construction: https://ai2-prior-grit.s3.us-west-2.amazonaws.com/public/construction_images.tar.gz
+    coco:
+      train2014: http://images.cocodataset.org/zips/train2014.zip
+      test2015: http://images.cocodataset.org/zips/test2015.zip
+    refclef: https://bvisionweb1.cs.unc.edu/licheng/referit/data/images/saiapr_tc-12.zip
+    nyuv2: http://horatio.cs.nyu.edu/mit/silberman/nyu_depth_v2/nyu_depth_v2_labeled.mat
+    
+datasets_to_download:
+  #- coco
+  #- construction
+  #- refclef
+  #- open_images
+  #- visual_genome
+  #- nyuv2
+  - blended_mvs
+
+
+grit:
+  base: ${prjpaths.data_dir}/GRIT
+  images: ${grit.base}/images
+  samples: ${grit.base}/samples
+  output_options: ${grit.base}/output_options
+
+hydra:
+  run:
+    dir: ${job_dir}

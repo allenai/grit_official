@@ -113,7 +113,28 @@ def download_blended_mvs(cfg):
     extract_targz(
         os.path.join(cfg.grit.images,'blended_mvs_images.tar.gz'),
         cfg.grit.images)
+    
 
+def download_scannet(cfg):
+    img_dir = f'{cfg.grit.images}/scannet'
+    mkdir_if_not_exists(img_dir,recursive=True)
+    scenes = set()
+    grit_paths = GritPaths(cfg.grit.base)
+    for subset in ['ablation','test']:
+        samples = load_json_object(grit_paths.samples('normals', subset))
+        scenes.update([s['image_id'].split('/')[2] for s in samples if 'scannet' in s['image_id']])
+    
+    for scene in scenes:
+        download_from_url(
+            f"http://download.cs.stanford.edu/orion/framenet/scannet-frame/{scene}.zip",
+            img_dir)
+        zip_path = os.path.join(img_dir,f"{scene}.zip")
+        extract_zip(zip_path,img_dir)
+
+    os.rename("scannet-frames", "val")
+
+def download_dtu(cfg):
+    pass
 
 @hydra.main(config_path='../configs',config_name='default')
 def main(cfg: DictConfig):

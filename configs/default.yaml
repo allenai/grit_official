@@ -2,6 +2,7 @@ job_name: default_job
 job_dir: ${prjpaths.output_dir}/${job_name}
 
 defaults:
+  - _self_
   - prjpaths: tanmay_ws
 
 urls:
@@ -23,7 +24,8 @@ datasets_to_download:
   #- open_images
   #- visual_genome
   #- nyuv2
-  - blended_mvs
+  #- blended_mvs
+  - scannet
 
 
 grit:

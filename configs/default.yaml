@@ -2,7 +2,8 @@ job_name: default_job
 job_dir: ${prjpaths.output_dir}/${job_name}
 
 defaults:
-  - prjpaths: tanmay_ws
+  - _self_
+  - prjpaths: ryan_node.yaml
 
 urls:
   samples: https://ai2-prior-grit.s3.us-west-2.amazonaws.com/public/grit_data.zip
@@ -23,7 +24,8 @@ datasets_to_download:
   #- open_images
   #- visual_genome
   #- nyuv2
-  - blended_mvs
+  #- blended_mvs
+  - scannet
 
 
 grit:

@@ -113,14 +113,41 @@ def download_blended_mvs(cfg):
     extract_targz(
         os.path.join(cfg.grit.images,'blended_mvs_images.tar.gz'),
         cfg.grit.images)
+    
 
+def download_scannet(cfg):
+    img_dir = f'{cfg.grit.images}/scannet'
+    mkdir_if_not_exists(img_dir,recursive=True)
+    scenes = set()
+    grit_paths = GritPaths(cfg.grit.base)
+    for subset in ['ablation','test']:
+        samples = load_json_object(grit_paths.samples('normal', subset))
+        scenes.update([s['image_id'].split('/')[2] for s in samples if 'scannet' in s['image_id']])
+    
+    for scene in tqdm(list(scenes)[:2]):
+        download_from_url(
+            f"http://download.cs.stanford.edu/orion/framenet/scannet-frame/{scene}.zip",
+            img_dir)
+        zip_path = os.path.join(img_dir,f"{scene}.zip")
+        extract_zip(zip_path,img_dir)
+    
+    subprocess.call(f'rm {img_dir}/*/*/*-normal.png',
+    shell=True)
+    subprocess.call( f'rm {img_dir}/*/*/*orient*png',
+    shell=True)
+    subprocess.call(f'rm {img_dir}/*.zip',
+    shell=True)
+    os.rename(os.path.join(img_dir,"scannet-frames"), os.path.join(img_dir,"val"))
+
+def download_dtu(cfg):
+    pass
 
 @hydra.main(config_path='../configs',config_name='default')
 def main(cfg: DictConfig):
     log.debug('\n' + OmegaConf.to_yaml(cfg))
-
-    # pending scannet and DTU
-    for dataset in cfg.datasets_to_download:    
+    
+    for dataset in cfg.datasets_to_download:  
+        print(f"Downloading {dataset}...")  
         if dataset=='coco':
             download_coco(cfg)
         elif dataset=='construction':
@@ -135,6 +162,10 @@ def main(cfg: DictConfig):
             download_visual_genome(cfg)
         elif dataset=='blended_mvs':
             download_blended_mvs(cfg)
+        elif dataset=='scannet':
+            download_scannet(cfg)
+        elif dataset=='dtu':
+            download_dtu(cfg)
         else:
             raise NotImplementedError
     

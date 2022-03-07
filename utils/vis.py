@@ -106,7 +106,11 @@ class GritIOType:
     INPUT = Input()
 
 
-def grit_viz(img,ios,io_type=GritIOType.PRED,text=None):
+def grit_viz(
+        img: np.ndarray,
+        ios: GritIO,
+        io_type: GritVizParams=GritIOType.PRED,
+        text=None):
     img_ = copy.deepcopy(img)
     
     if text is None:

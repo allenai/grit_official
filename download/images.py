@@ -121,10 +121,10 @@ def download_scannet(cfg):
     scenes = set()
     grit_paths = GritPaths(cfg.grit.base)
     for subset in ['ablation','test']:
-        samples = load_json_object(grit_paths.samples('normals', subset))
+        samples = load_json_object(grit_paths.samples('normal', subset))
         scenes.update([s['image_id'].split('/')[2] for s in samples if 'scannet' in s['image_id']])
     
-    for scene in scenes:
+    for scene in tqdm(scenes):
         download_from_url(
             f"http://download.cs.stanford.edu/orion/framenet/scannet-frame/{scene}.zip",
             img_dir)
@@ -139,9 +139,9 @@ def download_dtu(cfg):
 @hydra.main(config_path='../configs',config_name='default')
 def main(cfg: DictConfig):
     log.debug('\n' + OmegaConf.to_yaml(cfg))
-
-    # pending scannet and DTU
-    for dataset in cfg.datasets_to_download:    
+    
+    for dataset in cfg.datasets_to_download:  
+        print(f"Downloading {dataset}...")  
         if dataset=='coco':
             download_coco(cfg)
         elif dataset=='construction':
@@ -156,6 +156,10 @@ def main(cfg: DictConfig):
             download_visual_genome(cfg)
         elif dataset=='blended_mvs':
             download_blended_mvs(cfg)
+        elif dataset=='scannet':
+            download_scannet(cfg)
+        elif dataset=='dtu':
+            download_dtu(cfg)
         else:
             raise NotImplementedError
     

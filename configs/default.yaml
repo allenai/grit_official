@@ -3,12 +3,12 @@ job_dir: ${prjpaths.output_dir}/${job_name}
 
 defaults:
   - _self_
-  - prjpaths: ryan_node.yaml
+  - prjpaths: tanmay_ws #ryan_node.yaml
 
 urls:
   samples: https://ai2-prior-grit.s3.us-west-2.amazonaws.com/public/grit_data.zip
   images:
-    #sn: https://ai2-prior-grit.s3.us-west-2.amazonaws.com/public/sn_images.tar.gz
+    dtu: https://ai2-prior-grit.s3.us-west-2.amazonaws.com/public/dtu_images.tar.gz
     blended_mvs: https://ai2-prior-grit.s3.us-west-2.amazonaws.com/public/blended_mvs_images.tar.gz
     construction: https://ai2-prior-grit.s3.us-west-2.amazonaws.com/public/construction_images.tar.gz
     coco:
@@ -18,13 +18,14 @@ urls:
     nyuv2: http://horatio.cs.nyu.edu/mit/silberman/nyu_depth_v2/nyu_depth_v2_labeled.mat
     
 datasets_to_download:
-  #- coco
-  #- construction
-  #- refclef
-  #- open_images
-  #- visual_genome
-  #- nyuv2
-  #- blended_mvs
+  - coco
+  - construction
+  - refclef
+  - open_images
+  - visual_genome
+  - nyuv2
+  - blended_mvs
+  - dtu
   - scannet
 
 

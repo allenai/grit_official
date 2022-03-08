@@ -113,6 +113,15 @@ def download_blended_mvs(cfg):
     extract_targz(
         os.path.join(cfg.grit.images,'blended_mvs_images.tar.gz'),
         cfg.grit.images)
+
+
+def download_dtu(cfg):
+    mkdir_if_not_exists(cfg.grit.images,recursive=True)
+
+    download_from_url(cfg.urls.images.dtu,cfg.grit.images)
+    extract_targz(
+        os.path.join(cfg.grit.images,'dtu_images.tar.gz'),
+        cfg.grit.images)
     
 
 def download_scannet(cfg):
@@ -139,8 +148,6 @@ def download_scannet(cfg):
     shell=True)
     os.rename(os.path.join(img_dir,"scannet-frames"), os.path.join(img_dir,"val"))
 
-def download_dtu(cfg):
-    pass
 
 @hydra.main(config_path='../configs',config_name='default')
 def main(cfg: DictConfig):

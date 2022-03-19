@@ -133,7 +133,7 @@ def download_scannet(cfg):
         samples = load_json_object(grit_paths.samples('normal', subset))
         scenes.update([s['image_id'].split('/')[2] for s in samples if 'scannet' in s['image_id']])
     
-    for scene in tqdm(list(scenes)[:2]):
+    for scene in tqdm(list(scenes)):
         download_from_url(
             f"http://download.cs.stanford.edu/orion/framenet/scannet-frame/{scene}.zip",
             img_dir)
@@ -173,6 +173,8 @@ def main(cfg: DictConfig):
             download_scannet(cfg)
         elif dataset=='dtu':
             download_dtu(cfg)
+        elif dataset=='distortions':
+            download_distortions(cfg)
         else:
             raise NotImplementedError
     

@@ -1,0 +1,374 @@
+{
+    "categorization": [
+        {
+            "gt": {
+                "bboxes": null,
+                "mask": null,
+                "out_image_name": null,
+                "points": null,
+                "words": [
+                    "golf ball"
+                ]
+            },
+            "input": {
+                "image_path": "examples/images/categorization_0.png",
+                "task_query": null
+            }
+        },
+        {
+            "gt": {
+                "bboxes": null,
+                "mask": null,
+                "out_image_name": null,
+                "points": null,
+                "words": [
+                    "tablet computer"
+                ]
+            },
+            "input": {
+                "image_path": "examples/images/categorization_1.png",
+                "task_query": null
+            }
+        }
+    ],
+    "keypoint": [
+        {
+            "gt": {
+                "bboxes": [
+                    [
+                        231,
+                        38,
+                        278,
+                        171
+                    ]
+                ],
+                "mask": null,
+                "out_image_name": null,
+                "points": [
+                    [
+                        258,
+                        38,
+                        2,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        272,
+                        63,
+                        2,
+                        262,
+                        51,
+                        1,
+                        271,
+                        89,
+                        2,
+                        248,
+                        49,
+                        2,
+                        254,
+                        96,
+                        2,
+                        231,
+                        41,
+                        2,
+                        268,
+                        106,
+                        2,
+                        278,
+                        102,
+                        1,
+                        260,
+                        142,
+                        2,
+                        274,
+                        134,
+                        1,
+                        269,
+                        171,
+                        2,
+                        276,
+                        161,
+                        2
+                    ]
+                ],
+                "words": null
+            },
+            "input": {
+                "image_path": "examples/images/keypoint_0.png",
+                "task_query": "person"
+            }
+        },
+        {
+            "gt": {
+                "bboxes": [
+                    [
+                        120,
+                        36,
+                        186,
+                        216
+                    ]
+                ],
+                "mask": null,
+                "out_image_name": null,
+                "points": [
+                    [
+                        147,
+                        37,
+                        2,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        138,
+                        47,
+                        1,
+                        124,
+                        60,
+                        2,
+                        160,
+                        36,
+                        2,
+                        120,
+                        91,
+                        2,
+                        186,
+                        39,
+                        2,
+                        148,
+                        77,
+                        2,
+                        138,
+                        129,
+                        1,
+                        132,
+                        136,
+                        2,
+                        138,
+                        169,
+                        1,
+                        132,
+                        176,
+                        2,
+                        134,
+                        206,
+                        2,
+                        128,
+                        216,
+                        2
+                    ]
+                ],
+                "words": null
+            },
+            "input": {
+                "image_path": "examples/images/keypoint_1.png",
+                "task_query": "person"
+            }
+        }
+    ],
+    "localization": [
+        {
+            "gt": {
+                "bboxes": [
+                    [
+                        56,
+                        74,
+                        380,
+                        615
+                    ]
+                ],
+                "mask": null,
+                "out_image_name": null,
+                "points": null,
+                "words": null
+            },
+            "input": {
+                "image_path": "examples/images/localization_0.png",
+                "task_query": "zebra"
+            }
+        },
+        {
+            "gt": {
+                "bboxes": [
+                    [
+                        132,
+                        415,
+                        275,
+                        543
+                    ]
+                ],
+                "mask": null,
+                "out_image_name": null,
+                "points": null,
+                "words": null
+            },
+            "input": {
+                "image_path": "examples/images/localization_1.png",
+                "task_query": "snail"
+            }
+        }
+    ],
+    "normal": [
+        {
+            "gt": {
+                "bboxes": null,
+                "mask": null,
+                "out_image_name": "examples/images/normal_out_0.png",
+                "points": null,
+                "words": null
+            },
+            "input": {
+                "image_path": "examples/images/normal_0.png",
+                "task_query": null
+            }
+        },
+        {
+            "gt": {
+                "bboxes": null,
+                "mask": null,
+                "out_image_name": "examples/images/normal_out_1.png",
+                "points": null,
+                "words": null
+            },
+            "input": {
+                "image_path": "examples/images/normal_1.png",
+                "task_query": null
+            }
+        }
+    ],
+    "refexp": [
+        {
+            "gt": {
+                "bboxes": [
+                    [
+                        136,
+                        14,
+                        467,
+                        104
+                    ]
+                ],
+                "mask": null,
+                "out_image_name": null,
+                "points": null,
+                "words": null
+            },
+            "input": {
+                "image_path": "examples/images/refexp_0.png",
+                "task_query": "darker red dome shape"
+            }
+        },
+        {
+            "gt": {
+                "bboxes": [
+                    [
+                        206,
+                        134,
+                        442,
+                        279
+                    ]
+                ],
+                "mask": null,
+                "out_image_name": null,
+                "points": null,
+                "words": null
+            },
+            "input": {
+                "image_path": "examples/images/refexp_1.png",
+                "task_query": "tv"
+            }
+        }
+    ],
+    "segmentation": [
+        {
+            "gt": {
+                "bboxes": null,
+                "mask": null,
+                "out_image_name": null,
+                "points": null,
+                "words": null
+            },
+            "input": {
+                "image_path": "examples/images/segmentation_0.png",
+                "task_query": "truck"
+            }
+        },
+        {
+            "gt": {
+                "bboxes": null,
+                "mask": null,
+                "out_image_name": null,
+                "points": null,
+                "words": null
+            },
+            "input": {
+                "image_path": "examples/images/segmentation_1.png",
+                "task_query": "baby chair"
+            }
+        }
+    ],
+    "vqa": [
+        {
+            "gt": {
+                "bboxes": null,
+                "mask": null,
+                "out_image_name": null,
+                "points": null,
+                "words": [
+                    "a crown",
+                    "crown",
+                    "crown",
+                    "crown",
+                    "crown",
+                    "clock",
+                    "crown",
+                    "crown ",
+                    "crown",
+                    "billboard"
+                ]
+            },
+            "input": {
+                "image_path": "examples/images/vqa_0.png",
+                "task_query": "What is on top of the word rolex?"
+            }
+        },
+        {
+            "gt": {
+                "bboxes": null,
+                "mask": null,
+                "out_image_name": null,
+                "points": null,
+                "words": [
+                    "playing cards",
+                    "playing cards",
+                    "holding cards, talking on phone",
+                    "playing cards",
+                    "talking on phone",
+                    "playing cards",
+                    "playing cards",
+                    "crying",
+                    "playing cards",
+                    "playing card"
+                ]
+            },
+            "input": {
+                "image_path": "examples/images/vqa_1.png",
+                "task_query": "What is the woman doing?"
+            }
+        }
+    ]
+}

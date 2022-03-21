@@ -1,11 +1,15 @@
 import os
 import cv2
 import copy
+import base64
+import torch
 import numpy as np
+from io import BytesIO
 from PIL import Image, ImageDraw
 from typing import List, Tuple, Optional
 import matplotlib.pyplot as plt
 from dataclasses import dataclass, fields, field
+from torchvision.utils import draw_keypoints
 
 import utils.rle as rle
 
@@ -43,6 +47,24 @@ def display_thumbnail(img: np.ndarray, max_size=(100,100)) -> None:
     img.show()
 
 
+def base64_encode(img: np.ndarray, max_size=(100,100)):
+    img = Image.fromarray(img,'RGB')
+    img.thumbnail(max_size)
+    with BytesIO() as buffer:
+        img.save(buffer, 'png')
+        return base64.b64encode(buffer.getvalue()).decode()
+
+
+def get_image_formatter(input_type):
+    if input_type=='base64':
+        def formatter(enc_img):
+            return f'<img src="data:image/png;base64,{enc_img}">'
+    else:
+        raise NotImplementedError
+    
+    return formatter
+
+
 def add_bboxes(img: np.ndarray, bboxes: List[list], color=(200,0,200), thickness=3) -> None:
     """
     bboxes: list of [x1,y1,x2,y2] coordinates
@@ -61,6 +83,37 @@ def add_seg(img: np.ndarray, masks: List[np.ndarray], colors=RGB_COLORS, alpha=0
 
     for i,mask in enumerate(masks):
         img[mask==1,:] = (1-alpha)*img[mask==1,:] + alpha*np.array([colors[i]])
+
+
+CONNECT_SKELETON = [
+    (0, 1), (0, 2), (1, 3), (2, 4), (0, 5), (0, 6), (5, 7), (6, 8),
+    (7, 9), (8, 10), (5, 11), (6, 12), (11, 13), (12, 14), (13, 15), (14, 16)
+]
+N_KEYPOINTS = 17
+N_DIM = 3
+
+
+def add_kp(img: np.ndarray, kps: List[list]) -> np.ndarray:
+    img = torch.from_numpy(img)
+    img = torch.einsum('hwc->chw',img)
+    for i,kp in enumerate(kps):
+        k_array3d = np.reshape(np.array(kp),(N_KEYPOINTS,N_DIM))
+        kp_xy = k_array3d[:,:2]
+        k_vis = k_array3d[:,2]
+
+        if k_vis.sum() == 0:
+            # no keypoints are labeled for this person
+            continue 
+
+        visible_kps = np.argwhere(k_vis).ravel().tolist()
+        connections = [c for c in CONNECT_SKELETON if set(c).issubset(set(visible_kps))]
+
+        color = RGB_COLORS[i]
+        kp_torch = torch.from_numpy(np.expand_dims(kp_xy, axis=0))
+        img = draw_keypoints(img, kp_torch, connectivity=connections, colors=color, radius=5, width=4)
+    
+    img = torch.einsum('chw->hwc',img)
+    return img.detach().numpy()
 
 
 @dataclass
@@ -124,5 +177,8 @@ def grit_viz(
     
     if ios.segs is not None:
         add_seg(img_, ios.segs, colors=io_type.seg_colors, alpha=io_type.seg_alpha)
+
+    if ios.kps is not None:
+        img_ = add_kp(img_, ios.kps)
 
     return img_, text

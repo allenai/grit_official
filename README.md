@@ -14,6 +14,7 @@ This repository provides various tools and resources for evaluating vision and v
 conda create -n grit python=3.9 -y
 conda activate grit
 pip install -r requirements.txt
+pip install torch==1.11.0+cpu torchvision==0.12.0+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html
 ```
 
 ## Configuration

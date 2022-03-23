@@ -81,7 +81,17 @@ def add_seg(img: np.ndarray, masks: List[np.ndarray], colors=RGB_COLORS, alpha=0
     """
     N = len(masks)
 
-    for i,mask in enumerate(masks):
+    # to be commented out
+    img_ = Image.fromarray(img)
+    resized_masks = []
+    for mask in masks:
+        mask_img = Image.fromarray(mask)
+        resized_mask = mask_img.resize(img_.size)
+        resized_mask = np.array(resized_mask)
+        print(img_.size, resized_mask.shape)
+        resized_masks.append(resized_mask)
+
+    for i,mask in enumerate(resized_masks):
         img[mask==1,:] = (1-alpha)*img[mask==1,:] + alpha*np.array([colors[i]])
 
 

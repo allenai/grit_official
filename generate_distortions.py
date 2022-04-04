@@ -10,10 +10,9 @@ from grit_paths import GritPaths
 
 @hydra.main(config_path='configs',config_name='default')
 def main(cfg):
-    if cfg.subsets is None:
+    subsets = cfg.get('subsets', ['ablation','test'])
+    if subsets is None:
         subsets = ['ablation','test']
-    else:
-        subsets = cfg.subsets
 
     for subset in subsets:
         print(subset)

@@ -159,7 +159,7 @@ def main(cfg: DictConfig):
     log.debug('\n' + OmegaConf.to_yaml(cfg))
     
     for dataset in cfg.datasets_to_download:  
-        print(f"\nDownloading {dataset}...")  
+        print(f"\n\nDownloading {dataset}...")  
         if dataset=='coco':
             download_coco(cfg)
         elif dataset=='construction':

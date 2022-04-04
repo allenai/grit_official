@@ -127,26 +127,31 @@ def download_dtu(cfg):
 def download_scannet(cfg):
     img_dir = f'{cfg.grit.images}/scannet'
     mkdir_if_not_exists(img_dir,recursive=True)
-    scenes = set()
-    grit_paths = GritPaths(cfg.grit.base)
-    for subset in ['ablation','test']:
-        samples = load_json_object(grit_paths.samples('normal', subset))
-        scenes.update([s['image_id'].split('/')[2] for s in samples if 'scannet' in s['image_id']])
+    download_from_url(cfg.urls.images.scannet,cfg.grit.images)
+    extract_targz(
+        os.path.join(cfg.grit.images,'scannet_images.tar.gz'),
+        cfg.grit.images)
+
+    # scenes = set()
+    # grit_paths = GritPaths(cfg.grit.base)
+    # for subset in ['ablation','test']:
+    #     samples = load_json_object(grit_paths.samples('normal', subset))
+    #     scenes.update([s['image_id'].split('/')[2] for s in samples if 'scannet' in s['image_id']])
     
-    for scene in tqdm(list(scenes)):
-        download_from_url(
-            f"http://download.cs.stanford.edu/orion/framenet/scannet-frame/{scene}.zip",
-            img_dir)
-        zip_path = os.path.join(img_dir,f"{scene}.zip")
-        extract_zip(zip_path,img_dir)
+    # for scene in tqdm(list(scenes)):
+    #     download_from_url(
+    #         f"http://download.cs.stanford.edu/orion/framenet/scannet-frame/{scene}.zip",
+    #         img_dir)
+    #     zip_path = os.path.join(img_dir,f"{scene}.zip")
+    #     extract_zip(zip_path,img_dir)
     
-    subprocess.call(f'rm {img_dir}/*/*/*-normal.png',
-    shell=True)
-    subprocess.call( f'rm {img_dir}/*/*/*orient*png',
-    shell=True)
-    subprocess.call(f'rm {img_dir}/*.zip',
-    shell=True)
-    os.rename(os.path.join(img_dir,"scannet-frames"), os.path.join(img_dir,"val"))
+    # subprocess.call(f'rm {img_dir}/*/*/*-normal.png',
+    # shell=True)
+    # subprocess.call( f'rm {img_dir}/*/*/*orient*png',
+    # shell=True)
+    # subprocess.call(f'rm {img_dir}/*.zip',
+    # shell=True)
+    # os.rename(os.path.join(img_dir,"scannet-frames"), os.path.join(img_dir,"val"))
 
 
 @hydra.main(config_path='../configs',config_name='default')
@@ -154,7 +159,7 @@ def main(cfg: DictConfig):
     log.debug('\n' + OmegaConf.to_yaml(cfg))
     
     for dataset in cfg.datasets_to_download:  
-        print(f"Downloading {dataset}...")  
+        print(f"\nDownloading {dataset}...")  
         if dataset=='coco':
             download_coco(cfg)
         elif dataset=='construction':
@@ -173,8 +178,6 @@ def main(cfg: DictConfig):
             download_scannet(cfg)
         elif dataset=='dtu':
             download_dtu(cfg)
-        elif dataset=='distortions':
-            download_distortions(cfg)
         else:
             raise NotImplementedError
     

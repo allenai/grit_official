@@ -39,6 +39,10 @@ tasks_to_distort:
   - keypoint
   - normal
 
+subsets_to_distort:
+  - ablation
+  - test 
+
 grit:
   base: ${prjpaths.data_dir}/GRIT
   images: ${grit.base}/images

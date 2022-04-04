@@ -10,11 +10,12 @@ from grit_paths import GritPaths
 
 @hydra.main(config_path='configs',config_name='default')
 def main(cfg):
-    subsets = cfg.get('subsets', ['ablation','test'])
-    if subsets is None:
-        subsets = ['ablation','test']
+    if cfg.subsets_to_distort is not None:
+        subsets_to_distort = cfg.subsets_to_distort
+    else: 
+        subsets_to_distort = ['ablation','test']
 
-    for subset in subsets:
+    for subset in subsets_to_distort:
         print(subset)
         grit_paths = GritPaths(cfg.grit.base)
         for task in cfg.tasks_to_distort:

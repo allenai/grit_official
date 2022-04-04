@@ -29,7 +29,7 @@ First, download samples, images, and additive distortion maps by running
 ```
 bash download.sh   
 ```
-You may specify which datasets to download images for through `datasets_to_download` parameter in `configs/default.yaml`. Note that downloading scannet may take quite some time, so only download if evaluating on surface normal prediction task.  
+You may specify which datasets to download images for with the `datasets_to_download` parameter list in `configs/default.yaml`. Note that downloading scannet may take quite some time, so only download if evaluating on surface normal prediction task.  
 
 Second, create distorted images by running 
 ```
@@ -80,3 +80,8 @@ All public submissions to the GRIT leadeboard must adhere to the following rules
 * **Anonymity**: Public anonymous submissions are discouraged. However, leaderboard participants may create anonymous public submissions while waiting for conference review decisions. If so, the authors may use anonymous placeholders for name, email, and contributors fields in the submission form during the review cycle while clearly indicating paper id and conference name in the description field for reviewers to cross-reference the results. The description must also include a date when the authors intend to de-anonymize the results. Anonymous submission that are past the de-anonymization due date or those that do not meet any of the above criterion may be removed by the leaderboard creators. 
 
 
+# Troubleshooting
+#### `RuntimeError: Could not find mongod>=4.4`
+- See https://voxel51.com/docs/fiftyone/getting_started/troubleshooting.html#alternative-linux-builds
+- Depending on your operating system, you may need to change your fiftyone installation to match it
+- E.g. for `RHEL 7` systems use `pip install fiftyone-db-rhel7`

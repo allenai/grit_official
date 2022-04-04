@@ -3,7 +3,7 @@ job_dir: ${prjpaths.output_dir}/${job_name}
 
 defaults:
   - _self_
-  - prjpaths: tanmay_ws #ryan_node.yaml
+  - prjpaths: ryan_node.yaml #tanmay_ws
 
 urls:
   samples: https://ai2-prior-grit.s3.us-west-2.amazonaws.com/public/grit_data.zip
@@ -17,6 +17,7 @@ urls:
     refclef: https://bvisionweb1.cs.unc.edu/licheng/referit/data/images/saiapr_tc-12.zip
     nyuv2: http://horatio.cs.nyu.edu/mit/silberman/nyu_depth_v2/nyu_depth_v2_labeled.mat
     distortions: https://ai2-prior-grit.s3.us-west-2.amazonaws.com/public/distortions.tar.gz
+    scannet: https://ai2-prior-grit.s3.us-west-2.amazonaws.com/public/scannet_images.tar.gz
     
 datasets_to_download:
   - coco
@@ -27,7 +28,7 @@ datasets_to_download:
   - nyuv2
   - blended_mvs
   - dtu
-  #- scannet
+  - scannet
 
 tasks_to_distort:
   - categorization
@@ -37,6 +38,10 @@ tasks_to_distort:
   - segmentation
   - keypoint
   - normal
+
+subsets_to_distort:
+  - ablation
+  - test 
 
 grit:
   base: ${prjpaths.data_dir}/GRIT

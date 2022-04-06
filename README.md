@@ -37,6 +37,40 @@ python -m generate_distortions
 ```
 You may control which datasets to download images from through `datasets_to_download` paramters in `configs/default.yaml`.
 You may specify which tasks to generate distorted images for through `tasks_to_distort` parameter in `configs/default.yaml`
+ 
+## Input data format
+Once downloaded, the GRIT evaluation data should look as follows:
+```
+GRIT/
+|--distortions/                             # contains distortion delta maps
+|--output_options/                          # contains answer option candidates for categorization
+|  |--coco_categories.json
+|  |--nyuv2_categories.json
+|  |--open_images_categories.json
+|--samples/                             
+|  |--ablation/                             # contains ablation samples for each task 
+|  |  |--categorization.json
+|  |  |--localization.json
+|  |  |--vqa.json
+|  |  |--refexp.json
+|  |  |--segmentation.json
+|  |  |--keypoint.json
+|  |  |--normal.json
+|  |--test/                                 # contains test samples for each task (similar to ablation/)
+```
+Each of the seven tasks in GRIT require slightly different inputs and outputs. However, the tasks samples are stored in a json format following a consistent schema across tasks. Specifically, each json is a list of dicts with the following keys and values.
+```
+[
+    {
+        "example_id"     : str
+        "image_id"       : str              # relative path to input image
+        "task_name"      : str              # specifies the task such as "vqa", "refexp"
+        "task_query"     : str              # object category, question, referring expressions, or null 
+        "task_bbox"      : [x1,y1,x2,y2]    # input box coordinates for categorization task or null
+        "output_options" : str              # answer options to select from e.g "coco_categories" or null
+    }
+]
+```
 
 # GRIT Leaderboards
 
@@ -45,6 +79,7 @@ GRIT provides the following 4 leaderboards depending on the evaluation subset (`
 - https://leaderboard.allenai.org/grit-ablation-unrestricted
 - https://leaderboard.allenai.org/grit-test-restricted
 - https://leaderboard.allenai.org/grit-test-unrestricted
+
 
 ## Submission format
 You will need to prepare a single `ablation.zip` or `test.zip` file depending on the subset of GRIT you want to evaluate on. The following is the expected directory structure inside the `ablation.zip` file (replace `ablation` by `test` everywhere for `test.zip`) where each task json file contains predictions for the respective task and `params.json` contains parameter count in millions. The `normals/` directory contains each normal prediction saved as an RGB image. 

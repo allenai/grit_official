@@ -1,0 +1,181 @@
+import numpy as np
+from skimage.io import imread
+import os
+from scipy.spatial.transform import Rotation
+from skimage.transform import resize
+import torch
+import math
+
+# https://github.com/princeton-vl/oasis/blob/master/eval/absolute_surface_normal/eval_abs_normal.py
+def ang_error(pred_normal, gt_normal, ROI=None):
+    '''
+    Inputs
+        pred_normal: A numpy array of HxWx3, float32
+        gt_normal:   A numpy array of HxWx3, float32
+        ROI:         A numpy array of HxW,   uint8.
+                     If None, the entire image is ROI
+    Return
+        The angular differences between pred and gt in the ROI
+    '''
+
+    assert(pred_normal.shape[0] == gt_normal.shape[0])
+    assert(gt_normal.shape[0] == gt_normal.shape[0])
+    assert(len(pred_normal.shape) == 3 and len(gt_normal.shape) == 3)
+
+    # normalize
+    pred_normal = pred_normal / \
+        np.linalg.norm(pred_normal, ord=2, axis=2, keepdims=True)  # HxWx3
+    gt_normal = gt_normal / \
+        np.linalg.norm(gt_normal, ord=2, axis=2, keepdims=True)		# HxWx3
+
+    # calculate the angle difference
+    dot_prod = np.multiply(pred_normal, gt_normal)				# HxWx3
+    dot_prod = np.sum(dot_prod, axis=2)						    # HxW
+    dot_prod = np.clip(dot_prod, a_min=-1.0, a_max=1.0)
+
+    angles = np.arccos(dot_prod)
+    angles = np.degrees(angles)
+
+    if ROI is None:
+        # assert(np.all(angles <= 180.))
+        return angles.flatten()
+    else:
+        # assert(np.all(angles[ROI > 0] <= 180.))
+        return angles[ROI > 0]
+
+
+def evaluate_normal(pred_normals, gt_normals, ROIs=None, verbose=False):
+    '''
+    Inputs
+        pred_normal: A list of numpy arrays of HxWx3
+        gt_normal:   A list of numpy arrays of HxWx3
+        ROIs:		 A list of numpy arrays of HxW.
+    Return
+        mean_err:    The mean angular difference between the predicted and ground-truth normals. Measured in degree.
+        median_err:  The median angular difference between the predicted and ground-truth normals. Measured in degree.
+        below_11_25: The percentage of pixels whose angular difference is less than 11.25 degree.
+        below_22_5:  The percentage of pixels whose angular difference is less than 22.50 degree.
+        below_30:    The percentage of pixels whose angular difference is less than 30.00 degree.
+    '''
+
+    assert(len(pred_normals) == len(gt_normals))
+
+    if ROIs is None:
+        ROIs = [None for i in range(len(gt_normals))]
+
+    angles = []
+    for pred, gt, ROI in zip(pred_normals, gt_normals, ROIs):
+        _angles = ang_error(pred, gt, ROI)
+        angles.append(_angles)
+
+    angles = np.concatenate(angles)
+    n_pixels = float(len(angles))
+
+    mean_err = np.mean(angles)
+    median_err = np.median(angles)
+    below_11_25 = float(np.sum(angles < 11.25)) / n_pixels * 100
+    below_22_5 = float(np.sum(angles < 22.5)) / n_pixels * 100
+    below_30    = float(np.sum(angles < 30))    / n_pixels * 100
+
+    if verbose:
+        print(f"Mean Error:      {mean_err:.2f}")
+        print(f"Median Error:    {median_err:.2f}")
+        print(f"Error < 11.25°:  {below_11_25:.0f}%")
+        print(f"Error < 22.5°:   {below_22_5:.0f}%")
+        print(f"Error < 30°:     {below_30:.0f}%")
+    else:
+        return mean_err, median_err, below_11_25, below_22_5, below_30
+
+def rgb2normal(rgb):
+    n = (rgb-122.5)/122.5
+    n /= np.linalg.norm(n, ord=2, axis=2, keepdims=True)
+    return n
+
+def normal2rgb(n):
+    rgb = (n + 1)/2
+    rgb *= 255
+    return rgb.astype(np.uint8)
+
+def rotate_with_mask(X, M, R):
+    out = X @ R
+    out[~M] = X[~M]
+    return out
+
+def get_rotation_matrix(U,V,M):
+    U = U.copy()
+    V = V.copy()
+    M = M.copy()
+    # mask out invalid vectors 
+    h,w = M.shape
+    M = np.argwhere(M.reshape(h*w)).squeeze()
+    U = U.reshape(h*w,3)[M]
+    V = V.reshape(h*w,3)[M]
+    # estimation
+    R_hat, _ = Rotation.align_vectors(U,V)
+    return R_hat.as_matrix()
+
+def sharp_normal_mask(normals, angle_thre = 40):
+    B, _, H, W = normals.shape
+    dev = normals.device
+    generated_normal_right = normals[:,:,:,1:]
+    generated_normal_left = normals[:,:,:,:-1]
+    angle_diff_lr = torch.acos((generated_normal_right * generated_normal_left).sum(1)).unsqueeze(1) / math.pi * 180
+
+    generated_normal_bot = normals[:,:,1:,:]
+    generated_normal_up = normals[:,:,:-1,:]
+    angle_diff_ud = torch.acos((generated_normal_bot * generated_normal_up).sum(1)).unsqueeze(1) / math.pi * 180
+    
+    mask_lr = angle_diff_lr > angle_thre # mask
+    mask_ud = angle_diff_ud > angle_thre # mask
+    
+    up_down_mask = torch.zeros(B, 1, H, W).to(dev)
+    up_down_mask[:,:,1:] = mask_ud 
+    up_down_mask[:,:,:-1] = up_down_mask[:,:,:-1] + mask_ud 
+
+    left_right_mask = torch.zeros(B, 1, H, W).to(dev)
+    left_right_mask[:,:,:, 1:] = mask_lr
+    left_right_mask[:,:,:, :-1] = left_right_mask[:,:,:, :-1] + mask_lr 
+
+    invalid_mask = up_down_mask.long() | left_right_mask.long()
+    invalid_mask[invalid_mask > 1] = 1
+    return invalid_mask
+
+def get_mask_from_normals(normals_rgb):
+    # masks out values of [0,0,0], [128,128,128], or [201,201,201]
+    valid_mask_0 = (normals_rgb != 0).sum(axis=2) != 0
+    valid_mask_128 = (normals_rgb != 128).sum(axis=2) != 0 
+    valid_mask_201 = (normals_rgb != 201).sum(axis=2) != 0
+    valid_mask_sharp = ~sharp_normal_mask(torch.Tensor(rgb2normal(normals_rgb)).permute(2,0,1).unsqueeze(0))[0,0].bool().numpy()
+    valid_mask = np.logical_and.reduce((valid_mask_0, valid_mask_128, valid_mask_201, valid_mask_sharp))
+    return valid_mask
+
+def get_image_and_normals(cfg, task, print_source=True):
+    source = task['meta']['data_source']
+    if print_source:
+        print(source)
+    img_path = os.path.join(cfg.datapaths.images.dir, task['output']['image_id'])
+    img = imread(img_path)[:,:,:3]
+    normal_path = os.path.join(cfg.datapaths.images.dir, task['output']['out_image_name'])
+    normals_rgb = imread(normal_path)[:,:,:3]
+    valid_mask = get_mask_from_normals(normals_rgb, source)
+    return img, normals_rgb, valid_mask
+
+def sn_metric(pred, gt, M, verbose=False, rotate=True):
+    assert pred.shape == gt.shape
+    # if pred.shape != gt.shape:   # Optional reshaping
+    #     pred = resize(pred, gt.shape, preserve_range=True).astype(np.uint8)
+    N = rgb2normal(gt)
+    N_R = rgb2normal(pred)
+    if rotate:
+        R_hat = get_rotation_matrix(N_R,N,M)
+        N_estimated = rotate_with_mask(N_R, M, R_hat)
+    else: 
+        N_estimated = N_R
+
+    if M.sum() == 0:
+        if verbose: 
+            print("no normal labels in ground truth")
+        return 1.0
+    else:
+        score = evaluate_normal([N_estimated], [N], [M], verbose)
+    return score[2] / 100.0 # below 11.25 threshold

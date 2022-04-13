@@ -5,6 +5,7 @@ from scipy.spatial.transform import Rotation
 from skimage.transform import resize
 import torch
 import math
+from tqdm import tqdm
 
 # https://github.com/princeton-vl/oasis/blob/master/eval/absolute_surface_normal/eval_abs_normal.py
 def ang_error(pred_normal, gt_normal, ROI=None):
@@ -17,7 +18,6 @@ def ang_error(pred_normal, gt_normal, ROI=None):
     Return
         The angular differences between pred and gt in the ROI
     '''
-
     assert(pred_normal.shape[0] == gt_normal.shape[0])
     assert(gt_normal.shape[0] == gt_normal.shape[0])
     assert(len(pred_normal.shape) == 3 and len(gt_normal.shape) == 3)
@@ -80,11 +80,11 @@ def evaluate_normal(pred_normals, gt_normals, ROIs=None, verbose=False):
     if verbose:
         print(f"Mean Error:      {mean_err:.2f}")
         print(f"Median Error:    {median_err:.2f}")
-        print(f"Error < 11.25°:  {below_11_25:.0f}%")
-        print(f"Error < 22.5°:   {below_22_5:.0f}%")
-        print(f"Error < 30°:     {below_30:.0f}%")
-    else:
-        return mean_err, median_err, below_11_25, below_22_5, below_30
+        print(f"Inliers < 11.25°:  {below_11_25:.0f}%")
+        print(f"Inliers < 22.5°:   {below_22_5:.0f}%")
+        print(f"Inliers < 30°:     {below_30:.0f}%")
+
+    return mean_err, median_err, below_11_25, below_22_5, below_30
 
 def rgb2normal(rgb):
     n = (rgb-122.5)/122.5
@@ -92,8 +92,8 @@ def rgb2normal(rgb):
     return n
 
 def normal2rgb(n):
-    rgb = (n + 1)/2
-    rgb *= 255
+    rgb = (n + 1.0)/2.0
+    rgb *= 255.0
     return rgb.astype(np.uint8)
 
 def rotate_with_mask(X, M, R):
@@ -113,6 +113,56 @@ def get_rotation_matrix(U,V,M):
     # estimation
     R_hat, _ = Rotation.align_vectors(U,V)
     return R_hat.as_matrix()
+
+def get_rotation_matrix_RANSAC(U: np.ndarray, V: np.ndarray, M: np.ndarray, n_iters=100) -> np.ndarray:
+    """
+    Finds a rotation matrix to align normals from U to V using RANSAC
+    The values of the inputs U and V should be between -1 and 1 (normalized vectors)
+
+    Args:
+        U (ndarray): ndarray of shape (H, W, 3) and dtype float.
+        V (ndarray): ndarray of shape (H, W, 3) and dtype float.
+        M (ndarray): A List of tuple where,
+        n_iters (int): Integer denoting the number of iterations in RANSAC.
+
+    Returns:
+        R (ndarray[3, 3]): Best 3D Rotation matrix found by RANSAC.
+    """
+    if not isinstance(U, np.ndarray):
+        raise TypeError(f"U must be a np.ndarray, got {type(U)}")
+    elif not isinstance(V, np.ndarray):
+        raise TypeError(f"V must be a np.ndarray, got {type(V)}")
+    elif U.shape != V.shape:
+        raise TypeError(f"U and V must have the same shape, got {U.shape} != {V.shape}")
+    elif U.shape[2] == M.shape:
+        raise TypeError(f"Mask M must have the same first dimensions of U, got {U.shape[2] != M.shape}")    
+    
+    # mask out invalid vectors 
+    h,w = M.shape
+    M_flat = np.argwhere(M.reshape(h*w)).squeeze()
+    U_flat = U.copy().reshape(h*w,3)[M_flat]
+    V_flat = V.copy().reshape(h*w,3)[M_flat]
+    
+    # initialize RANSAC
+    np.random.seed(0)
+    best_inliers = 0
+    best_R_hat = np.eye(3)
+    
+    for i in tqdm(range(n_iters)):
+        # choose two pairs of normal vectors and solve for rotation
+        ind = np.random.choice(U.shape[0], size=2, replace=False)
+        R_hat, _ = Rotation.align_vectors(U_flat[ind,:],V_flat[ind,:])
+        R_hat = R_hat.as_matrix()
+        
+        # compute # of inliers, and save rotation if best
+        V_estimated = rotate_with_mask(U, M, R_hat)
+        inliers = evaluate_normal([V_estimated], [V], [M])[2]
+        if inliers > best_inliers: 
+            print(inliers)
+            best_inliers = inliers
+            best_R_hat = R_hat
+    
+    return best_R_hat
 
 def sharp_normal_mask(normals, angle_thre = 40):
     B, _, H, W = normals.shape
@@ -157,16 +207,19 @@ def get_image_and_normals(cfg, task, print_source=True):
     img = imread(img_path)[:,:,:3]
     normal_path = os.path.join(cfg.datapaths.images.dir, task['output']['out_image_name'])
     normals_rgb = imread(normal_path)[:,:,:3]
-    valid_mask = get_mask_from_normals(normals_rgb, source)
+    valid_mask = get_mask_from_normals(normals_rgb)
     return img, normals_rgb, valid_mask
 
-def sn_metric(pred, gt, M, verbose=False, rotate=True):
+def sn_metric(pred, gt, M, verbose=False, rotate=True, ransac=False):
     assert pred.shape == gt.shape
     # if pred.shape != gt.shape:   # Optional reshaping
     #     pred = resize(pred, gt.shape, preserve_range=True).astype(np.uint8)
-    N = rgb2normal(gt)
     N_R = rgb2normal(pred)
-    if rotate:
+    N = rgb2normal(gt)
+    if rotate and ransac:
+        R_hat = get_rotation_matrix_RANSAC(N_R,N,M)
+        N_estimated = rotate_with_mask(N_R, M, R_hat)
+    elif rotate: 
         R_hat = get_rotation_matrix(N_R,N,M)
         N_estimated = rotate_with_mask(N_R, M, R_hat)
     else: 

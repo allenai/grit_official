@@ -135,34 +135,42 @@ def get_rotation_matrix_RANSAC(U: np.ndarray, V: np.ndarray, M: np.ndarray, n_it
     elif U.shape != V.shape:
         raise TypeError(f"U and V must have the same shape, got {U.shape} != {V.shape}")
     elif U.shape[2] == M.shape:
-        raise TypeError(f"Mask M must have the same first dimensions of U, got {U.shape[2] != M.shape}")    
+        raise TypeError(f"Mask M must have the same first dimensions of U, got {U.shape[2] != M.shape}")
     
-    # mask out invalid vectors 
     h,w = M.shape
     M_flat = np.argwhere(M.reshape(h*w)).squeeze()
     U_flat = U.copy().reshape(h*w,3)[M_flat]
+    U_flat /= np.linalg.norm(U_flat, ord=2, axis=1, keepdims=True) 
     V_flat = V.copy().reshape(h*w,3)[M_flat]
+    V_flat /= np.linalg.norm(V_flat, ord=2, axis=1, keepdims=True) 
     
     # initialize RANSAC
     np.random.seed(0)
     best_inliers = 0
     best_R_hat = np.eye(3)
+    best_inliers = num_inliers(U_flat, V_flat)
     
     for i in tqdm(range(n_iters)):
         # choose two pairs of normal vectors and solve for rotation
         ind = np.random.choice(U.shape[0], size=2, replace=False)
         R_hat, _ = Rotation.align_vectors(U_flat[ind,:],V_flat[ind,:])
-        R_hat = R_hat.as_matrix()
-        
+       
         # compute # of inliers, and save rotation if best
-        V_estimated = rotate_with_mask(U, M, R_hat)
-        inliers = evaluate_normal([V_estimated], [V], [M])[2]
+        V_hat_flat = R_hat.apply(U_flat)
+        inliers = num_inliers(V_hat_flat, V_flat)
+        
         if inliers > best_inliers: 
-            print(inliers)
             best_inliers = inliers
             best_R_hat = R_hat
     
-    return best_R_hat
+    return best_R_hat.as_matrix()
+
+def num_inliers(V_hat_flat, V_flat):
+    dot_prod = np.multiply(V_hat_flat, V_flat).sum(axis=1).clip(-1.0,1.0)
+    angles = np.degrees(np.arccos(dot_prod))
+    n_pixels = float(len(angles))
+    inliers = np.sum(angles < 11.25)
+    return inliers
 
 def sharp_normal_mask(normals, angle_thre = 40):
     B, _, H, W = normals.shape

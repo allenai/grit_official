@@ -6,10 +6,9 @@ import torch
 import numpy as np
 from io import BytesIO
 from PIL import Image, ImageDraw
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Union
 import matplotlib.pyplot as plt
 from dataclasses import dataclass, fields, field
-from torchvision.utils import draw_keypoints
 
 import utils.rle as rle
 
@@ -90,28 +89,122 @@ CONNECT_SKELETON = [
 N_KEYPOINTS = 17
 N_DIM = 3
 
+# https://thadeusb.com/weblog/2010/10/10/python_scale_hex_color/
+def clamp(val, minimum=0, maximum=255):
+    if val < minimum:
+        return minimum
+    if val > maximum:
+        return maximum
+    return val
+
+# https://thadeusb.com/weblog/2010/10/10/python_scale_hex_color/
+def colorscale(hexstr, scalefactor):
+    """
+    Scales a hex string by ``scalefactor``. Returns scaled hex string.
+
+    To darken the color, use a float value between 0 and 1.
+    To brighten the color, use a float value greater than 1.
+
+    >>> colorscale("#DF3C3C", .5)
+    #6F1E1E
+    >>> colorscale("#52D24F", 1.6)
+    #83FF7E
+    >>> colorscale("#4F75D2", 1)
+    #4F75D2
+    """
+
+    hexstr = hexstr.strip('#')
+
+    if scalefactor < 0 or len(hexstr) != 6:
+        return hexstr
+
+    r, g, b = int(hexstr[:2], 16), int(hexstr[2:4], 16), int(hexstr[4:], 16)
+
+    r = int(clamp(r * scalefactor))
+    g = int(clamp(g * scalefactor))
+    b = int(clamp(b * scalefactor))
+
+    return "#%02x%02x%02x" % (r, g, b)
+
+# converted to numpy from https://pytorch.org/vision/main/_modules/torchvision/utils.html#draw_keypoints
+def draw_keypoints(
+    image: np.ndarray,
+    keypoints: np.ndarray,
+    connectivity: Optional[List[Tuple[int, int]]] = None,
+    colors: Optional[Union[str, Tuple[int, int, int]]] = None,
+    radius: int = 2,
+    width: int = 3,
+) -> np.ndarray:
+    """
+    Draws Keypoints on given RGB image.
+    The values of the input image should be uint8 between 0 and 255.
+
+    Args:
+        image (nndarray): ndarray of shape (3, H, W) and dtype uint8.
+        keypoints (ndarray): ndarray of shape (K, 2) the K keypoints location 
+            in the format [x, y]
+        connectivity (List[Tuple[int, int]]]): A List of tuple where,
+            each tuple contains pair of keypoints to be connected.
+        colors (str, Tuple): The color can be represented as
+            PIL strings e.g. "red" or "#FF00FF", or as RGB tuples e.g. ``(240, 10, 157)``.
+        radius (int): Integer denoting radius of keypoint.
+        width (int): Integer denoting width of line connecting keypoints.
+
+    Returns:
+        img (ndarray[H, W, C]): Image ndarray of dtype uint8 with keypoints drawn.
+    """
+    if not isinstance(image, np.ndarray):
+        raise TypeError(f"The image must be a ndarray, got {type(image)}")
+    elif image.dtype != np.uint8:
+        raise ValueError(f"The image dtype must be uint8, got {image.dtype}")
+    elif len(image.shape) != 3:
+        raise ValueError("Pass individual images, not batches")
+    elif image.shape[2] != 3:
+        raise ValueError("Pass an RGB image. Other Image formats are not supported")
+    if keypoints.ndim != 2:
+        raise ValueError("keypoints must be of shape (K, 2)")
+    img_to_draw = Image.fromarray(image)
+    draw = ImageDraw.Draw(img_to_draw)
+
+    for kpt in keypoints:
+        x1 = kpt[0] - radius
+        x2 = kpt[0] + radius
+        y1 = kpt[1] - radius
+        y2 = kpt[1] + radius
+        draw.ellipse([x1, y1, x2, y2], fill=colors, outline=None, width=0)
+
+    if connectivity:
+        for connection in connectivity:
+            start_pt_x = keypoints[connection[0]][0]
+            start_pt_y = keypoints[connection[0]][1]
+
+            end_pt_x = keypoints[connection[1]][0]
+            end_pt_y = keypoints[connection[1]][1]
+
+            draw.line(
+                ((start_pt_x, start_pt_y), (end_pt_x, end_pt_y)),
+                width=width,
+                fill=colorscale(colors, 2)
+            )
+
+    return np.array(img_to_draw)
 
 def add_kp(img: np.ndarray, kps: List[list]) -> np.ndarray:
-    img = torch.from_numpy(img)
-    img = torch.einsum('hwc->chw',img)
     for i,kp in enumerate(kps):
         k_array3d = np.reshape(np.array(kp),(N_KEYPOINTS,N_DIM))
         kp_xy = k_array3d[:,:2]
         k_vis = k_array3d[:,2]
 
-        if k_vis.sum() == 0:
-            # no keypoints are labeled for this person
+        if k_vis.sum() == 0: # no keypoints are labeled for this person
             continue 
 
         visible_kps = np.argwhere(k_vis).ravel().tolist()
         connections = [c for c in CONNECT_SKELETON if set(c).issubset(set(visible_kps))]
 
-        color = RGB_COLORS[i]
-        kp_torch = torch.from_numpy(np.expand_dims(kp_xy, axis=0))
-        img = draw_keypoints(img, kp_torch, connectivity=connections, colors=color, radius=5, width=4)
-    
-    img = torch.einsum('chw->hwc',img)
-    return img.detach().numpy()
+        color = HEX_COLORS[i]
+        img = draw_keypoints(img, kp_xy, connectivity=connections, colors=color, radius=5, width=4)
+
+    return img
 
 
 @dataclass

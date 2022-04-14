@@ -111,10 +111,10 @@ def get_rotation_matrix(U,V,M):
     U = U.reshape(h*w,3)[M]
     V = V.reshape(h*w,3)[M]
     # estimation
-    R_hat, _ = Rotation.align_vectors(U,V)
+    R_hat, _ = Rotation.align_vectors(V,U)
     return R_hat.as_matrix()
 
-def get_rotation_matrix_RANSAC(U: np.ndarray, V: np.ndarray, M: np.ndarray, n_iters=1000) -> np.ndarray:
+def get_rotation_matrix_RANSAC(U: np.ndarray, V: np.ndarray, M: np.ndarray, n_iters=1000, verbose=False) -> np.ndarray:
     """
     Finds a rotation matrix to align normals from U to V using RANSAC
     The values of the inputs U and V should be between -1 and 1 (normalized vectors)
@@ -149,9 +149,10 @@ def get_rotation_matrix_RANSAC(U: np.ndarray, V: np.ndarray, M: np.ndarray, n_it
     best_inliers = 0
     best_R_hat = np.eye(3)
     best_inliers = num_inliers(U_flat, V_flat)
-    # print("No rotation:", best_inliers/U_flat.shape[0])
+    if verbose:
+        print("No rotation:", best_inliers/U_flat.shape[0])
     
-    for i in tqdm(range(n_iters)):
+    for i in range(n_iters):
         # choose two pairs of normal vectors and solve for rotation
         ind = np.random.choice(U.shape[0], size=2, replace=False)
         # Rotation.align_vectors(a,b) gives you R that transforms b to a.
@@ -164,7 +165,8 @@ def get_rotation_matrix_RANSAC(U: np.ndarray, V: np.ndarray, M: np.ndarray, n_it
         if inliers > best_inliers: 
             best_inliers = inliers
             best_R_hat = R_hat
-            # print(best_inliers/U_flat.shape[0])
+            if verbose:
+                print(f"Iteration {i}: {best_inliers/U_flat.shape[0]}")
     
     return best_R_hat.as_matrix()
 
@@ -220,12 +222,27 @@ def get_image_and_normals(cfg, task, print_source=True):
     valid_mask = get_mask_from_normals(normals_rgb)
     return img, normals_rgb, valid_mask
 
-def sn_metric(pred, gt, M, verbose=False, rotate=True, ransac=False):
-    assert pred.shape == gt.shape
+def sn_metric(predicted_normals_rgb, gt_normals_rgb, valid_mask, verbose=False, rotate=True, ransac=False):
+    """
+    Produces a score for the predicted normals when compared to the ground truth normals
+    The inputs pred and gt are RGB images of surface normals of the inputs (0,255)
+
+    Args:
+        pred (ndarray): RGB image of shape (H, W, 3) and dtype uint8.
+        gt (ndarray): RGB image of shape (H, W, 3) and dtype uint8.
+        verbose (bool): print out intermediate outputs
+        rotate (bool): solve for a rotation between pred and gt before evaluation
+        ransac (bool): when True, use RANSAC estimation, False use optimal (sensitive to outliers)
+
+    Returns:
+        score (float): percentage of normals within 11.25° threshold 
+    """
+    assert predicted_normals_rgb.shape == gt_normals_rgb.shape
     # if pred.shape != gt.shape:   # Optional reshaping
     #     pred = resize(pred, gt.shape, preserve_range=True).astype(np.uint8)
-    N_R = rgb2normal(pred)
-    N = rgb2normal(gt)
+    N_R = rgb2normal(predicted_normals_rgb)
+    N = rgb2normal(gt_normals_rgb)
+    M = valid_mask
     if rotate and ransac:
         R_hat = get_rotation_matrix_RANSAC(N_R,N,M)
         N_estimated = rotate_with_mask(N_R, M, R_hat)

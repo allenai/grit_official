@@ -97,7 +97,7 @@ def normal2rgb(n):
     return rgb.astype(np.uint8)
 
 def rotate_with_mask(X, M, R):
-    out = X @ R
+    out = X @ R.T
     out[~M] = X[~M]
     return out
 

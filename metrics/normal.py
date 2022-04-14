@@ -114,7 +114,7 @@ def get_rotation_matrix(U,V,M):
     R_hat, _ = Rotation.align_vectors(U,V)
     return R_hat.as_matrix()
 
-def get_rotation_matrix_RANSAC(U: np.ndarray, V: np.ndarray, M: np.ndarray, n_iters=100) -> np.ndarray:
+def get_rotation_matrix_RANSAC(U: np.ndarray, V: np.ndarray, M: np.ndarray, n_iters=1000) -> np.ndarray:
     """
     Finds a rotation matrix to align normals from U to V using RANSAC
     The values of the inputs U and V should be between -1 and 1 (normalized vectors)
@@ -149,11 +149,13 @@ def get_rotation_matrix_RANSAC(U: np.ndarray, V: np.ndarray, M: np.ndarray, n_it
     best_inliers = 0
     best_R_hat = np.eye(3)
     best_inliers = num_inliers(U_flat, V_flat)
+    # print("No rotation:", best_inliers/U_flat.shape[0])
     
     for i in tqdm(range(n_iters)):
         # choose two pairs of normal vectors and solve for rotation
         ind = np.random.choice(U.shape[0], size=2, replace=False)
-        R_hat, _ = Rotation.align_vectors(U_flat[ind,:],V_flat[ind,:])
+        # Rotation.align_vectors(a,b) gives you R that transforms b to a.
+        R_hat, _ = Rotation.align_vectors(V_flat[ind,:],U_flat[ind,:])
        
         # compute # of inliers, and save rotation if best
         V_hat_flat = R_hat.apply(U_flat)
@@ -162,13 +164,13 @@ def get_rotation_matrix_RANSAC(U: np.ndarray, V: np.ndarray, M: np.ndarray, n_it
         if inliers > best_inliers: 
             best_inliers = inliers
             best_R_hat = R_hat
+            # print(best_inliers/U_flat.shape[0])
     
     return best_R_hat.as_matrix()
 
 def num_inliers(V_hat_flat, V_flat):
     dot_prod = np.multiply(V_hat_flat, V_flat).sum(axis=1).clip(-1.0,1.0)
     angles = np.degrees(np.arccos(dot_prod))
-    n_pixels = float(len(angles))
     inliers = np.sum(angles < 11.25)
     return inliers
 

@@ -3,7 +3,6 @@ from skimage.io import imread
 import os
 from scipy.spatial.transform import Rotation
 from skimage.transform import resize
-import torch
 import math
 from tqdm import tqdm
 
@@ -176,38 +175,40 @@ def num_inliers(V_hat_flat, V_flat):
     inliers = np.sum(angles < 11.25)
     return inliers
 
-def sharp_normal_mask(normals, angle_thre = 40):
-    B, _, H, W = normals.shape
-    dev = normals.device
-    generated_normal_right = normals[:,:,:,1:]
-    generated_normal_left = normals[:,:,:,:-1]
-    angle_diff_lr = torch.acos((generated_normal_right * generated_normal_left).sum(1)).unsqueeze(1) / math.pi * 180
+def sharp_normal_mask(gt_normals_rgb, angle_threshold=40):
+    gt_normals = rgb2normal(gt_normals_rgb) # (H, W, 3)
 
-    generated_normal_bot = normals[:,:,1:,:]
-    generated_normal_up = normals[:,:,:-1,:]
-    angle_diff_ud = torch.acos((generated_normal_bot * generated_normal_up).sum(1)).unsqueeze(1) / math.pi * 180
-    
-    mask_lr = angle_diff_lr > angle_thre # mask
-    mask_ud = angle_diff_ud > angle_thre # mask
-    
-    up_down_mask = torch.zeros(B, 1, H, W).to(dev)
-    up_down_mask[:,:,1:] = mask_ud 
-    up_down_mask[:,:,:-1] = up_down_mask[:,:,:-1] + mask_ud 
+    normal_right = gt_normals[:,1:,:]  # (H, W-1, 3)
+    normal_left =  gt_normals[:,:-1,:] # (H, W-1, 3)
 
-    left_right_mask = torch.zeros(B, 1, H, W).to(dev)
-    left_right_mask[:,:,:, 1:] = mask_lr
-    left_right_mask[:,:,:, :-1] = left_right_mask[:,:,:, :-1] + mask_lr 
+    angle_diff_lr = np.arccos(np.minimum(1,(normal_right * normal_left).sum(2))) / math.pi * 180   # (H, W-1)
 
-    invalid_mask = up_down_mask.long() | left_right_mask.long()
-    invalid_mask[invalid_mask > 1] = 1
+    normal_down = gt_normals[1:,:,:]  # (H-1, W, 3)
+    normal_up =  gt_normals[:-1,:,:] # (H-1, W, 3)
+
+    angle_diff_ud = np.arccos(np.minimum(1,(normal_down * normal_up).sum(2))) / math.pi * 180   # (H,-1 W)
+
+    mask_lr = angle_diff_lr > angle_threshold # mask
+    mask_ud = angle_diff_ud > angle_threshold # mask
+
+    up_down_mask = np.zeros(gt_normals.shape[:2])
+    up_down_mask[1:,:] = mask_ud 
+    up_down_mask[:-1,:] = up_down_mask[:-1,:] + mask_ud 
+
+    left_right_mask = np.zeros(gt_normals.shape[:2])
+    left_right_mask[:,1:] = mask_lr 
+    left_right_mask[:,:-1] = left_right_mask[:,:-1] + mask_lr
+
+    invalid_mask = (up_down_mask > 0) | (left_right_mask > 0)
+
     return invalid_mask
 
 def get_mask_from_normals(normals_rgb):
     # masks out values of [0,0,0], [128,128,128], or [201,201,201]
     valid_mask_0 = (normals_rgb != 0).sum(axis=2) != 0
-    valid_mask_128 = (normals_rgb != 128).sum(axis=2) != 0 
+    valid_mask_128 = (normals_rgb != 128).sum(axis=2) != 0
     valid_mask_201 = (normals_rgb != 201).sum(axis=2) != 0
-    valid_mask_sharp = ~sharp_normal_mask(torch.Tensor(rgb2normal(normals_rgb)).permute(2,0,1).unsqueeze(0))[0,0].bool().numpy()
+    valid_mask_sharp = ~sharp_normal_mask(normals_rgb)
     valid_mask = np.logical_and.reduce((valid_mask_0, valid_mask_128, valid_mask_201, valid_mask_sharp))
     return valid_mask
 

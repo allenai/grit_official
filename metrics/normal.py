@@ -4,7 +4,6 @@ import os
 from scipy.spatial.transform import Rotation
 from skimage.transform import resize
 import math
-from tqdm import tqdm
 
 # https://github.com/princeton-vl/oasis/blob/master/eval/absolute_surface_normal/eval_abs_normal.py
 def ang_error(pred_normal, gt_normal, ROI=None):

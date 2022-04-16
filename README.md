@@ -49,6 +49,7 @@ You may specify which tasks to generate distorted images for through `tasks_to_d
 Once downloaded, the GRIT evaluation data should look as follows:
 ```
 GRIT/
+|--images/                                  # contains images used in all tasks from various sources
 |--distortions/                             # contains distortion delta maps
 |--output_options/                          # contains answer option candidates for categorization
 |  |--coco_categories.json

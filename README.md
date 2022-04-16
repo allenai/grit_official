@@ -1,4 +1,5 @@
 # **GRIT**: **G**eneral **R**obust **I**mage **T**ask Benchmark
+By [Tanmay Gupta](http://tanmaygupta.info/), [Ryan Marten](https://www.ryanmarten.com/), [Aniruddha Kembhavi](https://anikem.github.io/), and [Derek Hoiem](https://dhoiem.cs.illinois.edu/)
 
 This repository provides various tools and resources for evaluating vision and vision-language models on the GRIT benchmark. Specifically, we include:
 
@@ -14,7 +15,6 @@ This repository provides various tools and resources for evaluating vision and v
 conda create -n grit python=3.9 -y
 conda activate grit
 pip install -r requirements.txt
-pip install torch==1.11.0+cpu torchvision==0.12.0+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html
 ```
 
 ## Configuration
@@ -114,6 +114,8 @@ All public submissions to the GRIT leadeboard must adhere to the following rules
 * **Submission Frequency**: GRIT ablation leaderboards allow unlimited private and public submissions. These are meant to be used for model ablation studies. GRIT test leaderboards are meant to be used for final evaluation and comparison between different models and hence only allow hidden private submissions and 1 public submission per 7 day period. The hidden private submission may be used to test whether the submitted files are correctly processed but they need to be made public (by using the "publish" button) in order to view the results.
 * **Anonymity**: Public anonymous submissions are discouraged. However, leaderboard participants may create anonymous public submissions while waiting for conference review decisions. If so, the authors may use anonymous placeholders for name, email, and contributors fields in the submission form during the review cycle while clearly indicating paper id and conference name in the description field for reviewers to cross-reference the results. The description must also include a date when the authors intend to de-anonymize the results. Anonymous submission that are past the de-anonymization due date or those that do not meet any of the above criterion may be removed by the leaderboard creators. 
 
+# Metrics and Evaluation
+To help users understand the metrics and evaluation better, we provide metrics for each task under `metrics/` and the evaluation script running on the leaderboard as [evaluate.py](evaluate.py). You may not be able to run the evaluation script as is because GRIT doesn't release meta data and ground truth for our ablation and test sets. However, it may still be beneficial for leaderboard participants to help understand how the numerous metrics on the GRIT leaderboards are computed. Participants may use our metric implementations to evaluate predictions on their selected training and validation data. 
 
 # Troubleshooting
 #### `RuntimeError: Could not find mongod>=4.4`

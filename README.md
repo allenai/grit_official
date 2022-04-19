@@ -25,7 +25,7 @@ pip install -r requirements.txt
 ```
 
 ## Configuration
-We use Hydra to specify configuration parameters through `configs/default.yaml` file. You will need to specify the following parameters in `default.yaml`:
+We use Hydra to specify configuration parameters through [`configs/default.yaml`](configs/default.yaml) file. You will need to specify the following:
 - `data_dir`: path to the directory where you want to download GRIT data
 - `output_dir`: path to the directory where you want to save output logs
 
@@ -36,14 +36,14 @@ First, download samples, images, and additive distortion maps by running
 ```
 bash download.sh   
 ```
-You may specify which datasets to download images for with the `datasets_to_download` parameter list in `configs/default.yaml`. Note that downloading scannet may take quite some time, so only download if evaluating on surface normal prediction task.  
+You may specify which datasets to download images for with the `datasets_to_download` parameter list in [`configs/default.yaml`](configs/default.yaml). Note that downloading scannet may take quite some time, so only download if evaluating on surface normal prediction task.  
 
 Second, create distorted images by running 
 ```
 python -m generate_distortions
 ```
-You may control which datasets to download images from through `datasets_to_download` paramters in `configs/default.yaml`.
-You may specify which tasks to generate distorted images for through `tasks_to_distort` parameter in `configs/default.yaml`
+You may control which datasets to download images from through `datasets_to_download` parameters in [`configs/default.yaml`](configs/default.yaml).
+You may specify which tasks to generate distorted images for through `tasks_to_distort` parameter in [`configs/default.yaml`](configs/default.yaml). 
  
 ## Input data format
 Once downloaded, the GRIT evaluation data should look as follows:
@@ -104,7 +104,7 @@ ablation/
 |--normals/
 ```
 
-If your model does not make predictions for a particular task, simply omit the correponding json file from the directory. The format of each of these files is described [here](submission_format.md).
+If your model does not make predictions for a particular task, simply omit the correponding json file from the directory. The format of each of these files is described in [`submission_format.md`](submission_format.md).
 
 ## Scoring
 In GRIT, various measures are computed per sample and aggregated across a subset of data points depending on the concept group, partition, and task of interest.
@@ -127,4 +127,4 @@ To help users understand the metrics and evaluation better, we provide metrics f
 
 ## Troubleshooting
 
-See [troubleshoot.md](troubleshoot.md)
+See [`troubleshoot.md`](troubleshoot.md)

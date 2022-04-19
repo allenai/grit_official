@@ -1,6 +1,5 @@
 # **GRIT**: **G**eneral **R**obust **I**mage **T**ask Benchmark
-By [Tanmay Gupta](http://tanmaygupta.info/), [Ryan Marten](https://www.ryanmarten.com/), [Aniruddha Kembhavi](https://anikem.github.io/), and [Derek Hoiem](https://dhoiem.cs.illinois.edu/)
-
+[[Project Website](https://allenai.org/project/grit/home) | [Arxiv Paper ](url) | [Github](https://github.com/allenai/grit_official/)] By [Tanmay Gupta](http://tanmaygupta.info/), [Ryan Marten](https://www.ryanmarten.com/), [Aniruddha Kembhavi](https://anikem.github.io/), and [Derek Hoiem](https://dhoiem.cs.illinois.edu/) 
 
 This repository provides various tools and resources for evaluating vision and vision-language models on the GRIT benchmark. Specifically, we include:
 
@@ -9,6 +8,8 @@ This repository provides various tools and resources for evaluating vision and v
 - Description and implementation of evaluation metrics
 - Instructions for submitting predictions and analyzing performance on the leaderboard
 - Utility functions for reading and visualizing sample inputs and predictions 
+
+
 
 ## GRIT Tasks
 GRIT includes 7 tasks. The following shows example inputs and outputs for each task:

@@ -70,7 +70,7 @@ Each of the seven tasks in GRIT require slightly different inputs and outputs. H
 ```
 [
     {
-        "example_id"     : str
+        "example_id"     : str              # unique sample identifier 
         "image_id"       : str              # relative path to input image
         "task_name"      : str              # specifies the task such as "vqa", "refexp"
         "task_query"     : str              # object category, question, referring expressions, or null 

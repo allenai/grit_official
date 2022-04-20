@@ -1,4 +1,5 @@
 # **GRIT**: **G**eneral **R**obust **I**mage **T**ask Benchmark
+[[Project Website](https://allenai.org/project/grit/home) | [Arxiv Paper ](url) | [Github](https://github.com/allenai/grit_official/)] By [Tanmay Gupta](http://tanmaygupta.info/), [Ryan Marten](https://www.ryanmarten.com/), [Aniruddha Kembhavi](https://anikem.github.io/), and [Derek Hoiem](https://dhoiem.cs.illinois.edu/) 
 
 This repository provides various tools and resources for evaluating vision and vision-language models on the GRIT benchmark. Specifically, we include:
 
@@ -9,16 +10,23 @@ This repository provides various tools and resources for evaluating vision and v
 - Utility functions for reading and visualizing sample inputs and predictions 
 
 
+
+## GRIT Tasks
+GRIT includes 7 tasks. The following shows example inputs and outputs for each task:
+
+<p align="left">
+    <img src="data/teaser.png" width="500">
+</p>
+
 ## Install dependencies
 ```
 conda create -n grit python=3.9 -y
 conda activate grit
 pip install -r requirements.txt
-pip install torch==1.11.0+cpu torchvision==0.12.0+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html
 ```
 
 ## Configuration
-We use Hydra to specify configuration parameters through `configs/default.yaml` file. You may need to specify the following parameters in `default.yaml`:
+We use Hydra to specify configuration parameters through [`configs/default.yaml`](configs/default.yaml) file. You will need to specify the following:
 - `data_dir`: path to the directory where you want to download GRIT data
 - `output_dir`: path to the directory where you want to save output logs
 
@@ -29,19 +37,20 @@ First, download samples, images, and additive distortion maps by running
 ```
 bash download.sh   
 ```
-You may specify which datasets to download images for with the `datasets_to_download` parameter list in `configs/default.yaml`. Note that downloading scannet may take quite some time, so only download if evaluating on surface normal prediction task.  
+You may specify which datasets to download images for with the `datasets_to_download` parameter list in [`configs/default.yaml`](configs/default.yaml). Note that downloading scannet may take quite some time, so only download if evaluating on surface normal prediction task.  
 
 Second, create distorted images by running 
 ```
 python -m generate_distortions
 ```
-You may control which datasets to download images from through `datasets_to_download` paramters in `configs/default.yaml`.
-You may specify which tasks to generate distorted images for through `tasks_to_distort` parameter in `configs/default.yaml`
+You may control which datasets to download images from through `datasets_to_download` parameters in [`configs/default.yaml`](configs/default.yaml).
+You may specify which tasks to generate distorted images for through `tasks_to_distort` parameter in [`configs/default.yaml`](configs/default.yaml). 
  
 ## Input data format
 Once downloaded, the GRIT evaluation data should look as follows:
 ```
 GRIT/
+|--images/                                  # contains images used in all tasks from various sources
 |--distortions/                             # contains distortion delta maps
 |--output_options/                          # contains answer option candidates for categorization
 |  |--coco_categories.json
@@ -62,7 +71,7 @@ Each of the seven tasks in GRIT require slightly different inputs and outputs. H
 ```
 [
     {
-        "example_id"     : str
+        "example_id"     : str              # unique sample identifier 
         "image_id"       : str              # relative path to input image
         "task_name"      : str              # specifies the task such as "vqa", "refexp"
         "task_query"     : str              # object category, question, referring expressions, or null 
@@ -96,7 +105,7 @@ ablation/
 |--normals/
 ```
 
-If your model does not make predictions for a particular task, simply omit the correponding json file from the directory. The format of each of these files is described [here](submission_format.md).
+If your model does not make predictions for a particular task, simply omit the correponding json file from the directory. The format of each of these files is described in [`submission_format.md`](submission_format.md).
 
 ## Scoring
 In GRIT, various measures are computed per sample and aggregated across a subset of data points depending on the concept group, partition, and task of interest.
@@ -114,9 +123,9 @@ All public submissions to the GRIT leadeboard must adhere to the following rules
 * **Submission Frequency**: GRIT ablation leaderboards allow unlimited private and public submissions. These are meant to be used for model ablation studies. GRIT test leaderboards are meant to be used for final evaluation and comparison between different models and hence only allow hidden private submissions and 1 public submission per 7 day period. The hidden private submission may be used to test whether the submitted files are correctly processed but they need to be made public (by using the "publish" button) in order to view the results.
 * **Anonymity**: Public anonymous submissions are discouraged. However, leaderboard participants may create anonymous public submissions while waiting for conference review decisions. If so, the authors may use anonymous placeholders for name, email, and contributors fields in the submission form during the review cycle while clearly indicating paper id and conference name in the description field for reviewers to cross-reference the results. The description must also include a date when the authors intend to de-anonymize the results. Anonymous submission that are past the de-anonymization due date or those that do not meet any of the above criterion may be removed by the leaderboard creators. 
 
+## Metrics and Evaluation
+To help users understand the metrics and evaluation better, we provide metrics for each task under [`metrics/`](metrics/) and the evaluation script running on the leaderboard as [`evaluate.py`](evaluate.py). You may not be able to run the evaluation script as is because GRIT doesn't release meta data and ground truth for our ablation and test sets. However, it may still be beneficial for leaderboard participants to help understand how the numerous metrics on the GRIT leaderboards are computed. Participants may use our metric implementations to evaluate predictions on their selected training and validation data. 
 
-# Troubleshooting
-#### `RuntimeError: Could not find mongod>=4.4`
-- See https://voxel51.com/docs/fiftyone/getting_started/troubleshooting.html#alternative-linux-builds
-- Depending on your operating system, you may need to change your fiftyone installation to match it
-- E.g. for `RHEL 7` systems use `pip install fiftyone-db-rhel7`
+## Troubleshooting
+
+See [`troubleshoot.md`](troubleshoot.md)

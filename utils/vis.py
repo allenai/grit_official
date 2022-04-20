@@ -220,7 +220,7 @@ class GritIO:
 class GritVizParams:
     box_color: Tuple[int,int,int] = (0,0,200)
     box_thickness: int = 3
-    seg_alpha: float = 0.3
+    seg_alpha: float = 0.5
     seg_colors: List[Tuple] = field(default_factory=lambda: RGB_COLORS)
     prefix: str = 'Text'
 

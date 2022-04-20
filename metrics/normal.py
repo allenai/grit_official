@@ -112,7 +112,7 @@ def get_rotation_matrix(U,V,M):
     R_hat, _ = Rotation.align_vectors(V,U)
     return R_hat.as_matrix()
 
-def get_rotation_matrix_RANSAC(U: np.ndarray, V: np.ndarray, M: np.ndarray, n_iters=1000, verbose=False) -> np.ndarray:
+def get_rotation_matrix_RANSAC(U: np.ndarray, V: np.ndarray, M: np.ndarray, n_iters=500, verbose=False) -> np.ndarray:
     """
     Finds a rotation matrix to align normals from U to V using RANSAC
     The values of the inputs U and V should be between -1 and 1 (normalized vectors)
@@ -145,7 +145,7 @@ def get_rotation_matrix_RANSAC(U: np.ndarray, V: np.ndarray, M: np.ndarray, n_it
     # initialize RANSAC
     np.random.seed(0)
     best_inliers = 0
-    best_R_hat = np.eye(3)
+    best_R_hat = Rotation.from_matrix(np.eye(3))
     best_inliers = num_inliers(U_flat, V_flat)
     if verbose:
         print("No rotation:", best_inliers/U_flat.shape[0])

@@ -125,9 +125,9 @@ def download_dtu(cfg):
     
 
 def download_scannet(cfg):
-    print("You must sign a Terms of Service agreement before downloading scannet.\
-         Instructions can be found at https://github.com/allenai/grit_official/blob/main/download/scannet_download_instructions.md")
-
+    print("ATTENTION - scannet has not been downloaded")
+    print("You must sign a Terms of Service agreement before downloading scannet manually")
+    print("Instructions can be found at https://github.com/allenai/grit_official/blob/main/download/scannet_download_instructions.md")
 
 @hydra.main(config_path='../configs',config_name='default')
 def main(cfg: DictConfig):

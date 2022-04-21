@@ -33,11 +33,11 @@ We use Hydra to specify configuration parameters. You will need to specify in [`
 ## Setup data
 This involves two steps. 
 
-First, download samples, images, and additive distortion maps by running the following command. You can specify which datasets to download images for with the `datasets_to_download` parameter list in [`configs/default.yaml`](configs/default.yaml).
+First, download samples, images, and additive distortion maps by running the following command.
 ```
 bash download.sh   
 ```
-
+You can specify which datasets to download images for with the `datasets_to_download` parameter list in [`configs/default.yaml`](configs/default.yaml).
 
 Second, create distorted images by running 
 ```

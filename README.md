@@ -37,7 +37,7 @@ First, download samples, images, and additive distortion maps by running
 ```
 bash download.sh   
 ```
-You may specify which datasets to download images for with the `datasets_to_download` parameter list in [`configs/default.yaml`](configs/default.yaml). Note that downloading scannet may take quite some time, so only download if evaluating on surface normal prediction task.  
+You may specify which datasets to download images for with the `datasets_to_download` parameter list in [`configs/default.yaml`](configs/default.yaml).
 
 Second, create distorted images by running 
 ```

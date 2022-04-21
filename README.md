@@ -26,7 +26,7 @@ pip install -r requirements.txt
 ```
 
 ## Configuration
-We use Hydra to specify configuration parameters through [`configs/prjpaths/default.yaml`](configs/prjpaths/default.yaml) file. You will need to specify the following:
+We use Hydra to specify configuration parameters. You will need to specify in [`configs/prjpaths/default.yaml`](configs/prjpaths/default.yaml): 
 - `data_dir`: path to the directory where you want to download GRIT data
 - `output_dir`: path to the directory where you want to save output logs
 

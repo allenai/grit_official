@@ -131,6 +131,9 @@ def download_scannet(cfg):
 
 @hydra.main(config_path='../configs',config_name='default')
 def main(cfg: DictConfig):
+    if cfg.prjpaths.data_dir is None or cfg.prjpaths.output_dir is None:
+        print("Please provide data_dir and output_dir paths in `configs/prjpaths/default.yaml`")
+        return
     log.debug('\n' + OmegaConf.to_yaml(cfg))
     
     for dataset in cfg.datasets_to_download:  

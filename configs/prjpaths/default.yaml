@@ -1,2 +1,2 @@
-data_dir: your/data/dir/path
-output_dir: your/output/dir/path
+data_dir: #your/data/dir/path
+output_dir: #your/output/dir/path

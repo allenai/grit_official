@@ -31,20 +31,18 @@ We use Hydra to specify configuration parameters. You will need to specify in [`
 - `output_dir`: path to the directory where you want to save output logs
 
 ## Setup data
-This involves two steps. 
 
-First, download samples, images, and additive distortion maps by running the following command.
+1) Download samples, images, and additive distortion maps
 ```
 bash download.sh   
 ```
-You can specify which datasets to download images for with the `datasets_to_download` parameter list in [`configs/default.yaml`](configs/default.yaml).
 
-Second, create distorted images by running 
+2) Create distorted images 
 ```
 python -m generate_distortions
 ```
-You may control which datasets to download images from through `datasets_to_download` parameters in [`configs/default.yaml`](configs/default.yaml).
-You may specify which tasks to generate distorted images for through `tasks_to_distort` parameter in [`configs/default.yaml`](configs/default.yaml). 
+
+Note: You may control which datasets to download images from with the `datasets_to_download` parameter and which tasks to generate distorted images for with the `tasks_to_distort` parameter in [`configs/default.yaml`](configs/default.yaml).
  
 ## Input data format
 Once downloaded, the GRIT evaluation data should look as follows:

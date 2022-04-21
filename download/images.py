@@ -128,15 +128,6 @@ def download_scannet(cfg):
     print("You must sign a Terms of Service agreement before downloading scannet.\
          Instructions can be found at https://github.com/allenai/grit_official/blob/main/download/scannet_download_instructions.md")
 
-    # print("""We temporarily provide this download link for convenience, 
-    #     but this will soon be hosted by Scannet authors directly.""")
-    # img_dir = f'{cfg.grit.images}/scannet'
-    # mkdir_if_not_exists(img_dir,recursive=True)
-    # download_from_url(cfg.urls.images.scannet,cfg.grit.images)
-    # extract_targz(
-    #     os.path.join(cfg.grit.images,'scannet_images.tar.gz'),
-    #     cfg.grit.images)
-
 
 @hydra.main(config_path='../configs',config_name='default')
 def main(cfg: DictConfig):

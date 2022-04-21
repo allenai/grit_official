@@ -10,7 +10,6 @@ urls:
   images:
     dtu: https://ai2-prior-grit.s3.us-west-2.amazonaws.com/public/dtu_images.tar.gz
     blended_mvs: https://ai2-prior-grit.s3.us-west-2.amazonaws.com/public/blended_mvs_images.tar.gz
-    scannet: https://ai2-prior-grit.s3.us-west-2.amazonaws.com/public/scannet_images.tar.gz
     construction: https://ai2-prior-grit.s3.us-west-2.amazonaws.com/public/construction_images.tar.gz
     coco:
       train2014: http://images.cocodataset.org/zips/train2014.zip

@@ -1,2 +1,3 @@
 *.pyc
 configs/prjpaths/ryan_node.yaml
+configs/default.yaml

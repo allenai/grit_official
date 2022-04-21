@@ -42,7 +42,9 @@ bash download.sh
 python -m generate_distortions
 ```
 
-Note: You may control which datasets to download images from with the `datasets_to_download` parameter and which tasks to generate distorted images for with the `tasks_to_distort` parameter in [`configs/default.yaml`](configs/default.yaml). The default values include all datasets and all tasks in GRIT. 
+Note: ScanNet requires extra steps to download, which are documented in [`download/scannet_download_instructions.md`](download/scannet_download_instructions.md)
+
+Note: You may control which datasets to download images from with the `datasets_to_download` parameter and which tasks to generate distorted images for with the `tasks_to_distort` parameter in [`configs/default.yaml`](configs/default.yaml). The defaults include all possible values.   
  
 ## Input data format
 Once downloaded, the GRIT evaluation data should look as follows:

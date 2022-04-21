@@ -3,7 +3,7 @@ job_dir: ${prjpaths.output_dir}/${job_name}
 
 defaults:
   - _self_
-  - prjpaths: tanmay_ws #ryan_node.yaml
+  - prjpaths: default
 
 urls:
   samples: https://ai2-prior-grit.s3.us-west-2.amazonaws.com/public/grit_data.zip

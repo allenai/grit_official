@@ -1,5 +1,11 @@
+<p align="center">
+    <img src="data/grit.svg" width="200">
+</p>
+
 # **GRIT**: **G**eneral **R**obust **I**mage **T**ask Benchmark
-[[Project Website](https://allenai.org/project/grit/home) | [Arxiv Paper ](url) | [Github](https://github.com/allenai/grit_official/)] By [Tanmay Gupta](http://tanmaygupta.info/), [Ryan Marten](https://www.ryanmarten.com/), [Aniruddha Kembhavi](https://anikem.github.io/), and [Derek Hoiem](https://dhoiem.cs.illinois.edu/) 
+[[Project Website](https://allenai.org/project/grit/home) | [Arxiv Paper ](url) | [Github](https://github.com/allenai/grit_official/)] 
+
+By [Tanmay Gupta](http://tanmaygupta.info/), [Ryan Marten](https://www.ryanmarten.com/), [Aniruddha Kembhavi](https://anikem.github.io/), and [Derek Hoiem](https://dhoiem.cs.illinois.edu/) 
 
 This repository provides various tools and resources for evaluating vision and vision-language models on the GRIT benchmark. Specifically, we include:
 

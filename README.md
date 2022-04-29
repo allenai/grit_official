@@ -3,7 +3,7 @@
 </p>
 
 # **GRIT**: **G**eneral **R**obust **I**mage **T**ask Benchmark
-[[Project Website](https://allenai.org/project/grit/home) | [Arxiv Paper ](url) | [Github](https://github.com/allenai/grit_official/)] 
+[[Project Website](https://allenai.org/project/grit/home) | [Arxiv Paper ](https://arxiv.org/abs/2204.13653) | [Github](https://github.com/allenai/grit_official/)] 
 
 By [Tanmay Gupta](http://tanmaygupta.info/), [Ryan Marten](https://www.ryanmarten.com/), [Aniruddha Kembhavi](https://anikem.github.io/), and [Derek Hoiem](https://dhoiem.cs.illinois.edu/) 
 

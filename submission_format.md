@@ -32,10 +32,10 @@ Each task json contains a list of dicts, a dict per sample. Each dict contains t
         "example_id" : str,
         "confidence" : float in [0,1],
         "words"      : str,
-        "bboxes"     : list of integers [x1,y1,x2,y2],        # box coordinates per instance
-        "masks"      : list of masks,                         # rle encoded binary masks per instance
-        "points"     : list of integers [x1,y1,...,x17,y17],  # the 17 keypoints per instance)
-        "normal"     : str,                                   # path to normal image relative to `normals/`
+        "bboxes"     : 2d list of integers [[x1,y1,x2,y2],[...],...],        # box coordinates per instance
+        "masks"      : list of rle masks       [{"counts":b''},{},...]    # rle encoded binary masks per instance
+        "points"     : 2d list of integers [[x1,y1,...,x17,y17],[...],...]   # the 17 keypoints per instance)
+        "normal"     : str,                                                  # path to normal image relative to `normals/`
     }
 ]
 ```

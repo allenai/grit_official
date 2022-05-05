@@ -112,7 +112,7 @@ def get_rotation_matrix(U,V,M):
     R_hat, _ = Rotation.align_vectors(V,U)
     return R_hat.as_matrix()
 
-def get_rotation_matrix_RANSAC(U: np.ndarray, V: np.ndarray, M: np.ndarray, n_iters=500, verbose=False) -> np.ndarray:
+def get_rotation_matrix_RANSAC(U: np.ndarray, V: np.ndarray, M: np.ndarray, n_iters=500, verbose=False, mode=None) -> np.ndarray:
     """
     Finds a rotation matrix to align normals from U to V using RANSAC
     The values of the inputs U and V should be between -1 and 1 (normalized vectors)
@@ -122,6 +122,8 @@ def get_rotation_matrix_RANSAC(U: np.ndarray, V: np.ndarray, M: np.ndarray, n_it
         V (ndarray): ndarray of shape (H, W, 3) and dtype float.
         M (ndarray): A List of tuple where,
         n_iters (int): Integer denoting the number of iterations in RANSAC.
+        verbose (bool): Boolean flag to print the intermediate scores everytime a better estimation is found
+        mode (str): String specifying the RANSAC variant; one of ['R-RANSAC','...']
 
     Returns:
         R (ndarray[3, 3]): Best 3D Rotation matrix found by RANSAC.
@@ -145,20 +147,23 @@ def get_rotation_matrix_RANSAC(U: np.ndarray, V: np.ndarray, M: np.ndarray, n_it
     # initialize RANSAC
     np.random.seed(0)
     best_inliers = 0
-    best_R_hat = Rotation.from_matrix(np.eye(3))
-    best_inliers = num_inliers(U_flat, V_flat)
-    if verbose:
-        print("No rotation:", best_inliers/U_flat.shape[0])
-    
+    R_hat = Rotation.from_matrix(np.eye(3))
+
     for i in range(n_iters):
-        # choose two pairs of normal vectors and solve for rotation
-        ind = np.random.choice(U.shape[0], size=2, replace=False)
-        # Rotation.align_vectors(a,b) gives you R that transforms b to a.
-        R_hat, _ = Rotation.align_vectors(V_flat[ind,:],U_flat[ind,:])
+        if i > 0:
+            # choose two pairs of normal vectors and solve for rotation
+            ind = np.random.choice(U.shape[0], size=2, replace=False)
+            # Rotation.align_vectors(a,b) gives you R that transforms b to a.
+            R_hat, _ = Rotation.align_vectors(V_flat[ind,:],U_flat[ind,:])
        
         # compute # of inliers, and save rotation if best
-        V_hat_flat = R_hat.apply(U_flat)
-        inliers = num_inliers(V_hat_flat, V_flat)
+        if mode=="R-RANSAC":
+            consesus_set_idx = np.random.choice(U_flat.shape[0], size=500, replace=False)  
+            V_hat_flat = R_hat.apply(U_flat[consesus_set_idx])
+            inliers = num_inliers(V_hat_flat, V_flat[consesus_set_idx])
+        else:
+            V_hat_flat = R_hat.apply(U_flat)
+            inliers = num_inliers(V_hat_flat, V_flat)
         
         if inliers > best_inliers: 
             best_inliers = inliers
@@ -222,7 +227,7 @@ def get_image_and_normals(cfg, task, print_source=True):
     valid_mask = get_mask_from_normals(normals_rgb)
     return img, normals_rgb, valid_mask
 
-def sn_metric(predicted_normals_rgb, gt_normals_rgb, valid_mask, verbose=False, rotate=True, ransac=False):
+def sn_metric(predicted_normals_rgb, gt_normals_rgb, valid_mask, verbose=False, rotate=True, ransac=False, mode=None):
     """
     Produces a score for the predicted normals when compared to the ground truth normals
     The inputs pred and gt are RGB images of surface normals of the inputs (0,255)
@@ -244,7 +249,7 @@ def sn_metric(predicted_normals_rgb, gt_normals_rgb, valid_mask, verbose=False, 
     N = rgb2normal(gt_normals_rgb)
     M = valid_mask
     if rotate and ransac:
-        R_hat = get_rotation_matrix_RANSAC(N_R,N,M)
+        R_hat = get_rotation_matrix_RANSAC(N_R,N,M, mode=mode)
         N_estimated = rotate_with_mask(N_R, M, R_hat)
     elif rotate: 
         R_hat = get_rotation_matrix(N_R,N,M)

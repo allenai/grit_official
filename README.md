@@ -135,3 +135,7 @@ To help users understand the metrics and evaluation better, we provide metrics f
 ## Troubleshooting
 
 See [`troubleshoot.md`](troubleshoot.md)
+
+## Training Data
+
+Although GRIT is a test-only benchmark, we provide some suggestions to setup common training data in [`training_data.md`](training_data.md)

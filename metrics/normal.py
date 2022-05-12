@@ -4,6 +4,7 @@ import os
 from scipy.spatial.transform import Rotation
 from skimage.transform import resize
 import math
+import time
 
 # https://github.com/princeton-vl/oasis/blob/master/eval/absolute_surface_normal/eval_abs_normal.py
 def ang_error(pred_normal, gt_normal, ROI=None):
@@ -84,6 +85,14 @@ def evaluate_normal(pred_normals, gt_normals, ROIs=None, verbose=False):
 
     return mean_err, median_err, below_11_25, below_22_5, below_30
 
+def evaluate_normal_fast(U: np.ndarray, V: np.ndarray, M: np.ndarray):
+    h,w = M.shape
+    M_flat = np.argwhere(M.reshape(h*w)).squeeze()
+    U_flat = U.reshape(h*w,3)[M_flat]
+    V_flat = V.reshape(h*w,3)[M_flat]
+    inliers = num_inliers(V_flat, U_flat)
+    return 100 * inliers/U_flat.shape[0]
+
 def rgb2normal(rgb):
     n = (rgb-122.5)/122.5
     n /= np.linalg.norm(n, ord=2, axis=2, keepdims=True)
@@ -112,7 +121,18 @@ def get_rotation_matrix(U,V,M):
     R_hat, _ = Rotation.align_vectors(V,U)
     return R_hat.as_matrix()
 
-def get_rotation_matrix_RANSAC(U: np.ndarray, V: np.ndarray, M: np.ndarray, n_iters=500, verbose=False) -> np.ndarray:
+#https://stackoverflow.com/questions/15707056/get-time-of-execution-of-a-block-of-code-in-python-2-7
+#https://stackoverflow.com/questions/739654/how-to-make-function-decorators-and-chain-them-together
+def time_this(func):
+    def wrapper(*args, **kwargs):
+        beg_ts = time.time()
+        retval = func(*args, **kwargs)
+        end_ts = time.time()
+        time_ts = end_ts - beg_ts
+        return retval, time_ts
+    return wrapper
+
+def get_rotation_matrix_RANSAC(U: np.ndarray, V: np.ndarray, M: np.ndarray, n_iters=500, verbose=False, mode=None, r_size=500, calc_score=False) -> np.ndarray:
     """
     Finds a rotation matrix to align normals from U to V using RANSAC
     The values of the inputs U and V should be between -1 and 1 (normalized vectors)
@@ -122,6 +142,8 @@ def get_rotation_matrix_RANSAC(U: np.ndarray, V: np.ndarray, M: np.ndarray, n_it
         V (ndarray): ndarray of shape (H, W, 3) and dtype float.
         M (ndarray): A List of tuple where,
         n_iters (int): Integer denoting the number of iterations in RANSAC.
+        verbose (bool): Boolean flag to print the intermediate scores everytime a better estimation is found
+        mode (str): String specifying the RANSAC variant; one of ['R-RANSAC','...']
 
     Returns:
         R (ndarray[3, 3]): Best 3D Rotation matrix found by RANSAC.
@@ -145,28 +167,67 @@ def get_rotation_matrix_RANSAC(U: np.ndarray, V: np.ndarray, M: np.ndarray, n_it
     # initialize RANSAC
     np.random.seed(0)
     best_inliers = 0
-    best_R_hat = Rotation.from_matrix(np.eye(3))
-    best_inliers = num_inliers(U_flat, V_flat)
-    if verbose:
-        print("No rotation:", best_inliers/U_flat.shape[0])
-    
+    R_hat = Rotation.from_matrix(np.eye(3))
+    rng = np.random.default_rng()
+
+    ali_time = np.zeros(n_iters)
+    rot_time = np.zeros(n_iters)
+    inl_time = np.zeros(n_iters)
+    it_time = np.zeros(n_iters)
+    choice_time = np.zeros(n_iters) 
+    tot_time1 = time.time()
+
     for i in range(n_iters):
-        # choose two pairs of normal vectors and solve for rotation
-        ind = np.random.choice(U.shape[0], size=2, replace=False)
-        # Rotation.align_vectors(a,b) gives you R that transforms b to a.
-        R_hat, _ = Rotation.align_vectors(V_flat[ind,:],U_flat[ind,:])
+        it_time1 = time.time()
+        if i > 0:
+            # choose two pairs of normal vectors and solve for rotation
+            ind = np.random.choice(U.shape[0], size=2, replace=False)
+            # Rotation.align_vectors(a,b) gives you R that transforms b to a.
+            (R_hat, _), ali_time[i] = time_this(Rotation.align_vectors)(V_flat[ind,:],U_flat[ind,:])
        
+    
         # compute # of inliers, and save rotation if best
-        V_hat_flat = R_hat.apply(U_flat)
-        inliers = num_inliers(V_hat_flat, V_flat)
-        
+        if mode=="R-RANSAC":
+            # consesus_set_idx, choice_time[i] = time_this(np.random.choice)(U_flat.shape[0], size=500, replace=False)
+            # https://stackoverflow.com/questions/8505651/non-repetitive-random-number-in-numpy --> 10x speedup
+            consesus_set_idx, choice_time[i] = time_this(rng.choice)(U_flat.shape[0], size=r_size, replace=False)  
+            V_hat_flat, rot_time[i] = time_this(R_hat.apply)(U_flat[consesus_set_idx])
+            inliers, inl_time[i] = time_this(num_inliers)(V_hat_flat, V_flat[consesus_set_idx])
+        else:
+            V_hat_flat, rot_time[i] = time_this(R_hat.apply)(U_flat)
+            inliers, inl_time[i] = time_this(num_inliers)(V_hat_flat, V_flat)
+
         if inliers > best_inliers: 
             best_inliers = inliers
             best_R_hat = R_hat
             if verbose:
                 print(f"Iteration {i}: {best_inliers/U_flat.shape[0]}")
+        
+        it_time2 = time.time()
+        it_time[i] = (it_time2 - it_time1)
+
+    tot_time2 = time.time()
+    tot_time = tot_time2 - tot_time1
+    if verbose:
+        print(f"Average time to align vectors {np.array(ali_time).mean()*1000:.2f}ms")
+        print(f"Average time to rotate vectors {np.array(rot_time).mean()*1000:.2f}ms")
+        print(f"Average time to calc inliers {np.array(inl_time).mean()*1000:.2f}ms")
+        print(f"Average time for choice {np.array(choice_time).mean()*1000:.2f}ms")
+        print(f"Average time for iteration {np.array(it_time).mean()*1000:.2f}ms")
+        print(f"Total time {n_iters} iterations {tot_time:.2f}s")
     
-    return best_R_hat.as_matrix()
+    # optionally calculate score
+    if calc_score:
+        V_hat_flat = best_R_hat.apply(U_flat)
+        inliers = num_inliers(V_hat_flat, V_flat)
+        score = 100 * inliers/U_flat.shape[0]
+        tot_time3 = time.time()
+        tot_time = tot_time3 - tot_time1
+        if verbose: 
+            print(f"Total time with score {tot_time:.2f}s")
+        return best_R_hat.as_matrix(), score
+    else: 
+        return best_R_hat.as_matrix()
 
 def num_inliers(V_hat_flat, V_flat):
     dot_prod = np.multiply(V_hat_flat, V_flat).sum(axis=1).clip(-1.0,1.0)
@@ -222,7 +283,7 @@ def get_image_and_normals(cfg, task, print_source=True):
     valid_mask = get_mask_from_normals(normals_rgb)
     return img, normals_rgb, valid_mask
 
-def sn_metric(predicted_normals_rgb, gt_normals_rgb, valid_mask, verbose=False, rotate=True, ransac=False):
+def sn_metric(predicted_normals_rgb, gt_normals_rgb, valid_mask, verbose=False, rotate=True, ransac=True, mode="R-RANSAC", r_size=500):
     """
     Produces a score for the predicted normals when compared to the ground truth normals
     The inputs pred and gt are RGB images of surface normals of the inputs (0,255)
@@ -244,7 +305,7 @@ def sn_metric(predicted_normals_rgb, gt_normals_rgb, valid_mask, verbose=False, 
     N = rgb2normal(gt_normals_rgb)
     M = valid_mask
     if rotate and ransac:
-        R_hat = get_rotation_matrix_RANSAC(N_R,N,M)
+        R_hat, score = get_rotation_matrix_RANSAC(N_R,N,M, mode=mode, r_size=r_size, calc_score=True)
         N_estimated = rotate_with_mask(N_R, M, R_hat)
     elif rotate: 
         R_hat = get_rotation_matrix(N_R,N,M)
@@ -256,6 +317,7 @@ def sn_metric(predicted_normals_rgb, gt_normals_rgb, valid_mask, verbose=False, 
         if verbose: 
             print("no normal labels in ground truth")
         return 1.0
-    else:
-        score = evaluate_normal([N_estimated], [N], [M], verbose)
-    return score[2] / 100.0 # below 11.25 threshold
+    elif not ransac:
+        # score = evaluate_normal([N_estimated], [N], [M], verbose)[2] # below 11.25 threshold
+        score = evaluate_normal_fast(N_estimated, N, M)
+    return score / 100.0 

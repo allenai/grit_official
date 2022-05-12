@@ -283,7 +283,7 @@ def get_image_and_normals(cfg, task, print_source=True):
     valid_mask = get_mask_from_normals(normals_rgb)
     return img, normals_rgb, valid_mask
 
-def sn_metric(predicted_normals_rgb, gt_normals_rgb, valid_mask, verbose=False, rotate=True, ransac=False, mode=None, r_size=500):
+def sn_metric(predicted_normals_rgb, gt_normals_rgb, valid_mask, verbose=False, rotate=True, ransac=True, mode="R-RANSAC", r_size=500):
     """
     Produces a score for the predicted normals when compared to the ground truth normals
     The inputs pred and gt are RGB images of surface normals of the inputs (0,255)

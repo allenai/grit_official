@@ -45,6 +45,6 @@ Not all keys are required to be present for each task. Here are the tasks that r
 * `confidence`: all tasks
 * `words`: categorization, vqa
 * `bboxes`: localization, refexp
-* `masks`: segmentation
+* `masks`: segmentation (to convert to RLE format, use the functions provided in [utils/rle.py](https://github.com/allenai/grit_official/blob/main/utils/rle.py))
 * `points`: keypoint
 * `normal`: normal

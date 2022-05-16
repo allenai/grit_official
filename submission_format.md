@@ -1,6 +1,10 @@
 # Submission Format
 
-You will need to prepare a single `ablation.zip` or `test.zip` file depending on the subset of GRIT you want to evaluate on. The zip files should contain a single directory called `ablation/` and `test/` respectively. If the zip file or the directory name is not as described above, your submission would fail. The following is the expected directory structure inside the `ablation.zip` file (replace `ablation` by `test` everywhere for `test.zip`) where each task json file contains predictions for the respective task and `params.json` contains parameter count in millions. The `normals/` directory contains each normal prediction saved as an RGB image. 
+You will need to prepare a single `ablation.zip` or `test.zip` file depending on the subset of GRIT you want to evaluate on. The zip files should contain a single directory called `ablation/` or `test/` respectively. 
+
+**Note** - If the zip file or the directory name is not as described above, your submission would fail. 
+
+The following is the expected directory structure inside the `ablation.zip` file (replace `ablation` by `test` everywhere for `test.zip`) where each task json file contains predictions for the respective task and `params.json` contains parameter count in millions. The `normals/` directory contains each normal prediction saved as an RGB image. 
 ```
 ablation/
 |--params.json

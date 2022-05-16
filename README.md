@@ -97,21 +97,7 @@ GRIT provides the following 4 leaderboards depending on the evaluation subset (`
 
 
 ## Submission format
-You will need to prepare a single `ablation.zip` or `test.zip` file depending on the subset of GRIT you want to evaluate on. The following is the expected directory structure inside the `ablation.zip` file (replace `ablation` by `test` everywhere for `test.zip`) where each task json file contains predictions for the respective task and `params.json` contains parameter count in millions. The `normals/` directory contains each normal prediction saved as an RGB image. 
-```
-ablation/
-|--params.json
-|--categorization.json
-|--localization.json
-|--refexp.json
-|--vqa.json
-|--segmentation.json
-|--keypoint.json
-|--normal.json
-|--normals/
-```
-
-If your model does not make predictions for a particular task, simply omit the correponding json file from the directory. The format of each of these files is described in [`submission_format.md`](submission_format.md).
+Please follow the submission instructions in [`submission_format.md`](submission_format.md).
 
 ## Scoring
 In GRIT, various measures are computed per sample and aggregated across a subset of data points depending on the concept group, partition, and task of interest.

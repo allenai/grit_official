@@ -53,4 +53,4 @@ Not all keys are required to be present for each task. Here are the tasks that r
 * `points`: keypoint
 * `normal`: normal
 
-Note - For the keypoints task, the predicted visibility (`v1,v2,...`) is currently not used in the evaluation, however the ground truth visibility is used. For each keypoint, `v` takes one of three values `{0,1,2}` corresponding to `{'not labeled', 'labeled but not visible', 'labeled and visible'}`. If your model doesn't predict visibility you may use any of these values in your prediction file without affecting your score. 
+**Note** - For the keypoints task, the predicted visibility (`v1,v2,...`) is currently not used in the evaluation, however the ground truth visibility is used. For each keypoint, `v` takes one of three values `{0,1,2}` corresponding to `{'not labeled', 'labeled but not visible', 'labeled and visible'}`. If your model doesn't predict visibility you may use any of these values in your prediction file without affecting your score. 

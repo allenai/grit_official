@@ -5,6 +5,7 @@ from scipy.spatial.transform import Rotation
 from skimage.transform import resize
 import math
 import time
+import warnings
 
 # https://github.com/princeton-vl/oasis/blob/master/eval/absolute_surface_normal/eval_abs_normal.py
 def ang_error(pred_normal, gt_normal, ROI=None):
@@ -165,7 +166,7 @@ def get_rotation_matrix_RANSAC(U: np.ndarray, V: np.ndarray, M: np.ndarray, n_it
     V_flat /= np.linalg.norm(V_flat, ord=2, axis=1, keepdims=True) 
     
     # initialize RANSAC
-    np.random.seed(0)
+    # np.random.seed(0)
     best_inliers = 0
     R_hat = Rotation.from_matrix(np.eye(3))
     rng = np.random.default_rng()
@@ -183,8 +184,10 @@ def get_rotation_matrix_RANSAC(U: np.ndarray, V: np.ndarray, M: np.ndarray, n_it
             # choose two pairs of normal vectors and solve for rotation
             ind = np.random.choice(U.shape[0], size=2, replace=False)
             # Rotation.align_vectors(a,b) gives you R that transforms b to a.
-            (R_hat, _), ali_time[i] = time_this(Rotation.align_vectors)(V_flat[ind,:],U_flat[ind,:])
-       
+            with warnings.catch_warnings(record=True) as w:
+                # Cause all warnings to always be triggered.
+                warnings.simplefilter("always")
+                (R_hat, _), ali_time[i] = time_this(Rotation.align_vectors)(V_flat[ind,:],U_flat[ind,:])
     
         # compute # of inliers, and save rotation if best
         if mode=="R-RANSAC":

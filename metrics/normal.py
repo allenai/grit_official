@@ -166,10 +166,10 @@ def get_rotation_matrix_RANSAC(U: np.ndarray, V: np.ndarray, M: np.ndarray, n_it
     V_flat /= np.linalg.norm(V_flat, ord=2, axis=1, keepdims=True) 
     
     # initialize RANSAC
-    # np.random.seed(0)
+    np.random.seed(0)
     best_inliers = 0
     R_hat = Rotation.from_matrix(np.eye(3))
-    rng = np.random.default_rng()
+    rng = np.random.default_rng(0)
 
     ali_time = np.zeros(n_iters)
     rot_time = np.zeros(n_iters)

@@ -49,20 +49,20 @@ def download_construction(cfg):
 def download_open_images(cfg):
     img_dir = f'{cfg.grit.images}/open_images'
     mkdir_if_not_exists(img_dir,recursive=True)
-    # image_ids = set()
-    # for task in ['localization','categorization','segmentation']:
-    #     grit_paths = GritPaths(cfg.grit.base)
-    #     for subset in ['ablation','test']:
-    #         samples = load_json_object(grit_paths.samples(task, subset))
-    #         image_ids.update(
-    #             [os.path.splitext(os.path.basename(s['image_id']))[0] \
-    #                 for s in samples if 'open_images' in s['image_id']])
+    image_ids = set()
+    for task in ['localization','categorization','segmentation']:
+        grit_paths = GritPaths(cfg.grit.base)
+        for subset in ['ablation','test']:
+            samples = load_json_object(grit_paths.samples(task, subset))
+            image_ids.update(
+                [os.path.splitext(os.path.basename(s['image_id']))[0] \
+                    for s in samples if 'open_images' in s['image_id']])
     
-    # foz.download_zoo_dataset(
-    #     "open-images-v6",
-    #     dataset_dir=img_dir,
-    #     split='test',
-    #     image_ids=image_ids)
+    foz.download_zoo_dataset(
+        "open-images-v6",
+        dataset_dir=img_dir,
+        split='test',
+        image_ids=image_ids)
 
     src_dir = f'{img_dir}/test/data'
     tgt_dir = f'{img_dir}/test'

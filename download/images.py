@@ -11,8 +11,8 @@ from PIL import Image
 import fiftyone.zoo as foz
 from utils.io import (list_dir, mkdir_if_not_exists, extract_zip, extract_targz,
     download_from_url, load_json_object)
-
 from grit_paths import GritPaths
+import shutil 
 
 log = logging.getLogger('__main__')
 
@@ -49,26 +49,32 @@ def download_construction(cfg):
 def download_open_images(cfg):
     img_dir = f'{cfg.grit.images}/open_images'
     mkdir_if_not_exists(img_dir,recursive=True)
-    image_ids = set()
-    for task in ['localization','categorization','segmentation']:
-        grit_paths = GritPaths(cfg.grit.base)
-        for subset in ['ablation','test']:
-            samples = load_json_object(grit_paths.samples(task, subset))
-            image_ids.update(
-                [os.path.splitext(os.path.basename(s['image_id']))[0] \
-                    for s in samples if 'open_images' in s['image_id']])
+    # image_ids = set()
+    # for task in ['localization','categorization','segmentation']:
+    #     grit_paths = GritPaths(cfg.grit.base)
+    #     for subset in ['ablation','test']:
+    #         samples = load_json_object(grit_paths.samples(task, subset))
+    #         image_ids.update(
+    #             [os.path.splitext(os.path.basename(s['image_id']))[0] \
+    #                 for s in samples if 'open_images' in s['image_id']])
     
-    foz.download_zoo_dataset(
-        "open-images-v6",
-        dataset_dir=img_dir,
-        split='test',
-        image_ids=image_ids)
+    # foz.download_zoo_dataset(
+    #     "open-images-v6",
+    #     dataset_dir=img_dir,
+    #     split='test',
+    #     image_ids=image_ids)
 
     src_dir = f'{img_dir}/test/data'
     tgt_dir = f'{img_dir}/test'
-    subprocess.call(
-        f'mv {src_dir}/* {tgt_dir}',
-        shell=True)
+    # subprocess.call(
+    #     f'mv {src_dir}/* {tgt_dir}',
+    #     shell=True)
+    allfiles = os.listdir(src_dir)
+    for f in allfiles:
+        srcfile = os.path.join(src_dir,f)
+        tgtfile = os.path.join(tgt_dir,f)
+        shutil.move(srcfile, tgtfile)
+    os.rmdir(src_dir)
     
     subprocess.call(
         f'rm -rf {img_dir}/test/data & rm -rf {img_dir}/test/metadata & rm -rf {img_dir}/test/labels',

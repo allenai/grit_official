@@ -16,6 +16,7 @@ A common reason for submissions to fail is incorrect naming of submission files.
 - named the zip files and its contents correctly, 
 - the zip files contains a single directory called `ablation` or `test` depending on the leaderboard you are submitting to,
 - the submission includes a `params.json` file containing the number of parameters
+- verified that none of your predictions or confidence scores are `NaN`s
 - verfied the prediction format matches that of example submissions:
   - [GPV-1](https://ai2-prior-grit.s3.us-west-2.amazonaws.com/public/baselines/gpv/ablation.zip)/[GPV-2](https://ai2-prior-grit.s3.us-west-2.amazonaws.com/public/baselines/gpv2/ablation.zip): Categorization, Localization, VQA, RefExp
   - [Mask-RCNN](https://ai2-prior-grit.s3.us-west-2.amazonaws.com/public/baselines/maskrcnn/ablation.zip): Localization, Segmentation, Keypoints
